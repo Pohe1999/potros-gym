@@ -78,17 +78,34 @@ async function loadMembers() {
 
 const app = express()
 
-// CORS configuration
-const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:4000', 'https://potros-sistema.netlify.app', 'https://potros-gym.onrender.com'],
+// CORS configuration - allow frontend from both local and production
+app.use(cors({
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:4000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:4000',
+      'https://potros-sistema.netlify.app',
+      'https://potros-gym.onrender.com'
+    ]
+    
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}
-
-app.use(cors(corsOptions))
+  credentials: true,
+  optionsSuccessStatus: 200
+}))
 app.use(express.json())
 app.use(morgan('dev'))
+
+// Preflight handler
+app.options('*', cors())
 
 app.get('/health', (req, res) => {
   res.json({ ok: true, time: new Date().toISOString() })
@@ -239,5 +256,7 @@ app.post('/maintenance/backfill-visit-names', async (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`🚀 API escuchando en http://localhost:${PORT}`)
+  console.log(`✅ MongoDB conectado`)
+  console.log(`🚀 API escuchando en puerto ${PORT}`)
+  console.log(`📍 Frontend: https://potros-sistema.netlify.app`)
 })
