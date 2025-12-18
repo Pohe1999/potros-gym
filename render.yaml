@@ -2,10 +2,12 @@ services:
   - type: web
     name: potros-gym-backend
     runtime: node
+    plan: free
     region: oregon
-    rootDir: backend
-    buildCommand: npm install
-    startCommand: npm start
+    branch: main
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    env: node
     envVars:
       - key: NODE_ENV
         value: production
