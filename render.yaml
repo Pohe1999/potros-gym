@@ -5,7 +5,9 @@ services:
     plan: free
     region: oregon
     branch: main
-    buildCommand: cd backend && npm install
+    # Use npm ci to install backend deps deterministically and faster on CI
+    buildCommand: cd backend && npm ci
+    # Start the backend from the backend folder
     startCommand: cd backend && npm start
     env: node
     envVars:
