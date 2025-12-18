@@ -80,7 +80,7 @@ const app = express()
 
 // CORS configuration
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:4000', 'https://potros-sistema.netlify.app', 'https://potros-gym-backend.onrender.com'],
+  origin: ['http://localhost:5173', 'http://localhost:4000', 'https://potros-sistema.netlify.app', 'https://potros-gym.onrender.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
