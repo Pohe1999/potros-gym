@@ -75,7 +75,7 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
 
   return (
     <>
-      <div className="bg-gray-900 p-8 rounded-lg card-shadow border-2 border-gray-800">
+      <div className="bg-gray-900 p-4 md:p-8 rounded-lg card-shadow border-2 border-gray-800">
         <div className="text-center mb-6">
           <img src="/logo.png" alt="POTROS GYM" className="h-16 w-16 object-contain mx-auto mb-4" />
           <h2 className="text-3xl font-bold mb-2 flex items-center justify-center gap-3">
@@ -89,14 +89,14 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
           <input 
             type="text"
             placeholder="Escribe el nombre del socio..."
-            className="w-full p-5 rounded-lg bg-gray-800 text-2xl text-center border-2 border-gray-700 focus:border-potros-red focus:outline-none transition-all"
+            className="w-full p-3 md:p-5 rounded-lg bg-gray-800 text-xl md:text-2xl text-center border-2 border-gray-700 focus:border-potros-red focus:outline-none transition-all"
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
             autoComplete="off"
             autoFocus
           />
           {suggestions.length > 0 && (
-            <div className="absolute z-10 w-full mt-2 bg-gray-800 rounded-lg shadow-2xl max-h-96 overflow-y-auto border-2 border-gray-700">
+            <div className="absolute z-10 w-full mt-2 bg-gray-800 rounded-lg shadow-2xl max-h-72 md:max-h-96 overflow-y-auto border-2 border-gray-700">
               {suggestions.map(m => {
                 const fullName = `${m.firstName || m.name} ${m.paterno} ${m.materno}`.trim()
                 const isExpired = m.expiry && new Date(m.expiry + 'T23:59:59') < new Date()
@@ -136,7 +136,7 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
 
       {/* Historial de entradas de hoy */}
       {todayVisits.length > 0 && (
-        <div className="bg-gray-900 p-6 rounded-lg card-shadow border border-gray-800 mt-4">
+        <div className="bg-gray-900 p-4 md:p-6 rounded-lg card-shadow border border-gray-800 mt-4">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <span>📋</span> Entradas de Hoy ({todayVisits.length})
           </h3>

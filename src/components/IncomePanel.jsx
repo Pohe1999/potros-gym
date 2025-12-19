@@ -231,7 +231,7 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
           </div>
 
           {/* Estadísticas de periodo */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="bg-gray-800 p-3 rounded-lg">
               <div className="text-xs text-gray-400 uppercase">Esta Semana</div>
               <div className="text-xl font-bold text-yellow-400">${summary.thisWeek.toLocaleString()}</div>

@@ -79,10 +79,10 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
   }, [members, quickVisits])
 
   return (
-    <div className="bg-gray-900 p-8 rounded-lg card-shadow border-2 border-gray-800">
+    <div className="bg-gray-900 p-4 md:p-8 rounded-lg card-shadow border-2 border-gray-800">
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold mb-2 flex items-center justify-center gap-3">
-          <span className="text-4xl">📝</span>
+        <h2 className="text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-3">
+          <span className="text-3xl md:text-4xl">📝</span>
           <span>Registrar Visita</span>
         </h2>
         <p className="text-gray-400">Para socios y visitantes sin contratación</p>
@@ -108,7 +108,7 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
           <input
             type="text"
             placeholder="Ej: Carlos Mendoza"
-            className="w-full p-4 rounded-lg bg-gray-800 border-2 border-gray-700 focus:border-potros-red focus:outline-none text-lg text-white placeholder-gray-500 transition-colors"
+            className="w-full p-3 md:p-4 rounded-lg bg-gray-800 border-2 border-gray-700 focus:border-potros-red focus:outline-none text-base md:text-lg text-white placeholder-gray-500 transition-colors"
             value={name}
             onChange={e => setName(e.target.value)}
             autoFocus
@@ -124,7 +124,7 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
       </form>
 
       {/* Últimas visitas de hoy */}
-      <div className="mt-8 pt-6 border-t border-gray-700">
+      <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-700">
         <h3 className="text-sm font-semibold text-gray-400 uppercase mb-3">Visitas de Hoy ({todayVisits.length})</h3>
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {todayVisits.length === 0 && (

@@ -13,7 +13,7 @@ export default function MemberList({ members = [], onChange }) {
   return (
     <div className="space-y-4">
       <div className="bg-gray-900 p-4 rounded-lg border-2 border-gray-800">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-3 gap-3">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <span>👥</span> Lista de Socios
           </h2>
