@@ -75,21 +75,21 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
 
   return (
     <>
-      <div className="bg-gray-900 p-4 md:p-8 rounded-lg card-shadow border-2 border-gray-800">
-        <div className="text-center mb-6">
-          <img src="/logo.png" alt="POTROS GYM" className="h-16 w-16 object-contain mx-auto mb-4" />
-          <h2 className="text-3xl font-bold mb-2 flex items-center justify-center gap-3">
-            <span className="text-4xl">👋</span>
+      <div className="bg-gray-900 p-2 md:p-8 rounded-lg card-shadow border-2 border-gray-800">
+      <div className="text-center mb-6">
+        <img src="/logo.png" alt="POTROS GYM" className="h-24 w-24 md:h-24 md:w-24 object-contain mx-auto mb-4" />
+        <h2 className="text-xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-3">
+            <span className="text-3xl md:text-4xl">👋</span>
             <span>Registro de Entrada</span>
           </h2>
-          <p className="text-gray-400">Busca al socio por nombre o teléfono</p>
+          <p className="text-xs md:text-sm text-gray-400">Busca al socio por nombre o teléfono</p>
         </div>
         
         <div className="relative">
           <input 
             type="text"
             placeholder="Escribe el nombre del socio..."
-            className="w-full p-3 md:p-5 rounded-lg bg-gray-800 text-xl md:text-2xl text-center border-2 border-gray-700 focus:border-potros-red focus:outline-none transition-all"
+            className="w-full p-3 md:p-5 rounded-lg bg-gray-800 text-base md:text-2xl text-center border-2 border-gray-700 focus:border-potros-red focus:outline-none transition-all"
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
             autoComplete="off"
@@ -136,7 +136,7 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
 
       {/* Historial de entradas de hoy */}
       {todayVisits.length > 0 && (
-        <div className="bg-gray-900 p-4 md:p-6 rounded-lg card-shadow border border-gray-800 mt-4">
+        <div className="bg-gray-900 p-2 md:p-6 rounded-lg card-shadow border border-gray-800 mt-4">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <span>📋</span> Entradas de Hoy ({todayVisits.length})
           </h3>

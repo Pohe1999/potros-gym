@@ -5,7 +5,6 @@ export default function MemberForm({ onSave }) {
   const [firstName, setFirstName] = useState('')
   const [paterno, setPaterno] = useState('')
   const [materno, setMaterno] = useState('')
-  const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [joinDate, setJoinDate] = useState(new Date().toISOString().slice(0,10))
   const [planType, setPlanType] = useState('mensual')
@@ -27,11 +26,10 @@ export default function MemberForm({ onSave }) {
       return
     }
     try {
-      await membersService.addMember({ firstName, paterno, materno, email, phone, joinDate, planType })
+      await membersService.addMember({ firstName, paterno, materno, phone, joinDate, planType })
       setFirstName('')
       setPaterno('')
       setMaterno('')
-      setEmail('')
       setPhone('')
       setJoinDate(new Date().toISOString().slice(0,10))
       setPlanType('mensual')
@@ -42,8 +40,8 @@ export default function MemberForm({ onSave }) {
   }
 
   return (
-    <div className="bg-gray-900 p-6 rounded-lg card-shadow border-2 border-gray-800">
-      <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+    <div className="bg-gray-900 p-2 md:p-6 rounded-lg card-shadow border-2 border-gray-800">
+      <h2 className="text-lg md:text-2xl font-semibold mb-6 flex items-center gap-2">
         <span>➕</span> Registrar Nuevo Socio
       </h2>
       <form onSubmit={submit} className="space-y-4">
@@ -54,32 +52,32 @@ export default function MemberForm({ onSave }) {
           </div>
         )}
         
-        <div className="bg-gray-800 p-4 rounded-lg space-y-4">
+        <div className="bg-gray-800 p-2 md:p-4 rounded-lg space-y-4">
           <h3 className="text-sm font-semibold text-gray-400 uppercase">Datos Personales</h3>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Nombre(s) *</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Nombre(s) *</label>
             <input 
-              className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-lg" 
+              className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-lg" 
               value={firstName} 
               onChange={e => setFirstName(e.target.value)} 
               required 
               placeholder="Ej: Juan Carlos"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Apellido Paterno</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Apellido Paterno</label>
               <input 
-                className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all" 
+                className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-base" 
                 value={paterno} 
                 onChange={e => setPaterno(e.target.value)}
                 placeholder="Ej: López" 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Apellido Materno</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Apellido Materno</label>
               <input 
-                className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all" 
+                className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-base" 
                 value={materno} 
                 onChange={e => setMaterno(e.target.value)}
                 placeholder="Ej: García" 
@@ -88,45 +86,35 @@ export default function MemberForm({ onSave }) {
           </div>
         </div>
 
-        <div className="bg-gray-800 p-4 rounded-lg space-y-4">
+        <div className="bg-gray-800 p-2 md:p-4 rounded-lg space-y-4">
           <h3 className="text-sm font-semibold text-gray-400 uppercase">Contacto</h3>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Teléfono (WhatsApp) *</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Teléfono (WhatsApp) *</label>
             <input 
-              className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-lg" 
+              className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-lg" 
               value={phone} 
               onChange={e => setPhone(e.target.value)} 
               placeholder="55 1234 5678" 
               required 
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Email (opcional)</label>
-            <input 
-              type="email" 
-              className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all" 
-              value={email} 
-              onChange={e => setEmail(e.target.value)}
-              placeholder="correo@ejemplo.com" 
-            />
-          </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded-lg space-y-4">
+        <div className="bg-gray-800 p-2 md:p-4 rounded-lg space-y-4">
           <h3 className="text-sm font-semibold text-gray-400 uppercase">Membresía</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Fecha de ingreso</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Fecha de ingreso</label>
               <input 
                 type="date" 
-                className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all" 
+                className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-base" 
                 value={joinDate} 
                 onChange={e=>setJoinDate(e.target.value)} 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Tipo de plan</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Tipo de plan</label>
               <select 
-                className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all" 
+                className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-base" 
                 value={planType} 
                 onChange={e=>setPlanType(e.target.value)}
               >
@@ -138,15 +126,15 @@ export default function MemberForm({ onSave }) {
               </select>
             </div>
           </div>
-          <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+          <div className="bg-gray-900 p-2 md:p-4 rounded-lg border border-gray-700">
             <div className="flex justify-between items-center">
               <div>
                 <div className="text-sm text-gray-400">Precio del plan</div>
-                <div className="text-3xl font-bold text-potros-red">${pricePreview}</div>
+                <div className="text-2xl md:text-3xl font-bold text-potros-red">${pricePreview}</div>
               </div>
               <div className="text-right">
                 <div className="text-sm text-gray-400">Vencimiento</div>
-                <div className="text-lg font-semibold text-green-400">{expiryPreview}</div>
+                <div className="text-base md:text-lg font-semibold text-green-400">{expiryPreview}</div>
               </div>
             </div>
           </div>
