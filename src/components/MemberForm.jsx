@@ -40,11 +40,11 @@ export default function MemberForm({ onSave }) {
   }
 
   return (
-    <div className="bg-gray-900 p-2 md:p-6 rounded-lg card-shadow border-2 border-gray-800">
-      <h2 className="text-lg md:text-2xl font-semibold mb-6 flex items-center gap-2">
+    <div className="bg-gray-900 -mx-4 md:mx-0 p-3 md:p-6 rounded-none md:rounded-lg card-shadow md:border-2 border-gray-800">
+      <h2 className="text-lg md:text-2xl font-semibold mb-6 flex items-center gap-2 px-1 md:px-0">
         <span>➕</span> Registrar Nuevo Socio
       </h2>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className="space-y-4 px-1 md:px-0">
         {error && (
           <div className="p-3 bg-red-900 border border-red-700 text-red-200 rounded-lg text-sm flex items-center gap-2">
             <span>⚠️</span>
@@ -52,10 +52,10 @@ export default function MemberForm({ onSave }) {
           </div>
         )}
         
-        <div className="bg-gray-800 p-2 md:p-4 rounded-lg space-y-4">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase">Datos Personales</h3>
+        <div className="bg-gray-800 p-3 md:p-4 rounded-lg space-y-3 md:space-y-4">
+          <h3 className="text-xs md:text-sm font-semibold text-gray-400 uppercase">Datos Personales</h3>
           <div>
-            <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Nombre(s) *</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-300 mb-2">Nombre(s) *</label>
             <input 
               className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-lg" 
               value={firstName} 
@@ -86,8 +86,8 @@ export default function MemberForm({ onSave }) {
           </div>
         </div>
 
-        <div className="bg-gray-800 p-2 md:p-4 rounded-lg space-y-4">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase">Contacto</h3>
+        <div className="bg-gray-800 p-3 md:p-4 rounded-lg space-y-3 md:space-y-4">
+          <h3 className="text-xs md:text-sm font-semibold text-gray-400 uppercase">Contacto</h3>
           <div>
             <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Teléfono (WhatsApp) *</label>
             <input 
@@ -99,8 +99,8 @@ export default function MemberForm({ onSave }) {
             />
           </div>
         </div>
-        <div className="bg-gray-800 p-2 md:p-4 rounded-lg space-y-4">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase">Membresía</h3>
+        <div className="bg-gray-800 p-3 md:p-4 rounded-lg space-y-3 md:space-y-4">
+          <h3 className="text-xs md:text-sm font-semibold text-gray-400 uppercase">Membresía</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Fecha de ingreso</label>

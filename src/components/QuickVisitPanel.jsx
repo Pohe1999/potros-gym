@@ -79,18 +79,18 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
   }, [members, quickVisits])
 
   return (
-    <div className="bg-gray-900 p-4 md:p-8 rounded-lg card-shadow border-2 border-gray-800">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-3">
-          <span className="text-3xl md:text-4xl">📝</span>
+    <div className="bg-gray-900 -mx-4 md:mx-0 p-3 md:p-8 rounded-none md:rounded-lg card-shadow md:border-2 border-gray-800">
+      <div className="text-center mb-6 px-2 md:px-0">
+        <h2 className="text-xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-3">
+          <span className="text-2xl md:text-4xl">📝</span>
           <span>Registrar Visita</span>
         </h2>
-        <p className="text-gray-400">Para socios y visitantes sin contratación</p>
+        <p className="text-xs md:text-sm text-gray-400">Para socios y visitantes sin contratación</p>
       </div>
 
-      <form onSubmit={handleRegisterVisit} className="space-y-4">
+      <form onSubmit={handleRegisterVisit} className="space-y-4 px-1 md:px-0">
         {message && (
-          <div className={`p-4 rounded-lg font-semibold text-center ${
+          <div className={`p-3 md:p-4 rounded-lg font-semibold text-center text-sm md:text-base ${
             messageType === 'success' 
               ? 'bg-green-900 text-green-200 border border-green-700'
               : messageType === 'warning'
@@ -102,13 +102,13 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
         )}
 
         <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-3">
+          <label className="block text-xs md:text-sm font-semibold text-gray-300 mb-2">
             Nombre *
           </label>
           <input
             type="text"
             placeholder="Ej: Carlos Mendoza"
-            className="w-full p-3 md:p-4 rounded-lg bg-gray-800 border-2 border-gray-700 focus:border-potros-red focus:outline-none text-base md:text-lg text-white placeholder-gray-500 transition-colors"
+            className="w-full p-3 md:p-4 rounded-lg bg-gray-800 border-2 border-gray-700 focus:border-potros-red focus:outline-none text-sm md:text-lg text-white placeholder-gray-500 transition-colors"
             value={name}
             onChange={e => setName(e.target.value)}
             autoFocus
@@ -117,7 +117,7 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
 
         <button
           type="submit"
-          className="w-full bg-potros-red hover:bg-red-700 p-4 rounded-lg font-bold text-white text-lg transition-colors transform hover:scale-105 active:scale-95"
+          className="w-full bg-potros-red hover:bg-red-700 p-3 md:p-4 rounded-lg font-bold text-white text-base md:text-lg transition-colors transform hover:scale-105 active:scale-95"
         >
           ✅ Registrar Visita
         </button>

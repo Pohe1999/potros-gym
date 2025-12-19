@@ -75,8 +75,8 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
 
   return (
     <>
-      <div className="bg-gray-900 p-2 md:p-8 rounded-lg card-shadow border-2 border-gray-800">
-      <div className="text-center mb-6">
+      <div className="bg-gray-900 -mx-4 md:mx-0 p-3 md:p-8 rounded-none md:rounded-lg card-shadow md:border-2 border-gray-800">
+      <div className="text-center mb-4 md:mb-6 px-2 md:px-0">
         <img src="/logo.png" alt="POTROS GYM" className="h-24 w-24 md:h-24 md:w-24 object-contain mx-auto mb-4" />
         <h2 className="text-xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-3">
             <span className="text-3xl md:text-4xl">👋</span>
@@ -85,7 +85,7 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
           <p className="text-xs md:text-sm text-gray-400">Busca al socio por nombre o teléfono</p>
         </div>
         
-        <div className="relative">
+        <div className="relative px-1 md:px-0">
           <input 
             type="text"
             placeholder="Escribe el nombre del socio..."
@@ -128,7 +128,7 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
         </div>
         
         {suggestions.length === 0 && searchQuery.length > 2 && (
-          <div className="mt-4 p-4 bg-yellow-900 text-yellow-200 rounded text-center">
+          <div className="mt-4 p-3 md:p-4 bg-yellow-900 text-yellow-200 rounded text-center text-sm md:text-base">
             ⚠️ No se encontró ningún socio con ese nombre
           </div>
         )}
@@ -136,7 +136,7 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
 
       {/* Historial de entradas de hoy */}
       {todayVisits.length > 0 && (
-        <div className="bg-gray-900 p-2 md:p-6 rounded-lg card-shadow border border-gray-800 mt-4">
+        <div className="bg-gray-900 -mx-3 md:mx-0 p-3 md:p-6 md:rounded-lg card-shadow border-t md:border rounded-none border-gray-800 mt-4">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <span>📋</span> Entradas de Hoy ({todayVisits.length})
           </h3>
