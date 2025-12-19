@@ -75,20 +75,25 @@ export default function MemberCard({ member, onChange }) {
               </div>
             )}
           </div>
-          <div className="flex flex-row md:flex-col gap-2 md:ml-4 mt-3 md:mt-0">
-            <button 
-              onClick={() => setShowRenewModal(true)} 
-              className="px-4 py-2 bg-potros-red text-white rounded hover:bg-red-700 transition-colors font-semibold"
-            >
-              🔄 Renovar
-            </button>
-            <button 
-              onClick={remove} 
-              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
-            >
-              🗑️ Eliminar
-            </button>
-          </div>
+            <div className="flex items-center justify-center md:flex-col gap-3 md:ml-4 mt-3 md:mt-0">
+              <button
+                onClick={() => setShowRenewModal(true)}
+                className="w-14 h-14 flex items-center justify-center bg-potros-red text-white rounded-md border border-gray-700 hover:bg-red-700 transition-colors md:w-full md:h-auto md:px-4 md:py-2"
+                title="Renovar"
+              >
+                <span className="text-lg md:hidden">🔄</span>
+                <span className="hidden md:inline">🔄 Renovar</span>
+              </button>
+
+              <button
+                onClick={remove}
+                className="w-14 h-14 flex items-center justify-center bg-gray-700 text-white rounded-md border border-gray-700 hover:bg-gray-600 transition-colors md:w-full md:h-auto md:px-4 md:py-2"
+                title="Eliminar"
+              >
+                <span className="text-lg md:hidden">🗑️</span>
+                <span className="hidden md:inline">🗑️ Eliminar</span>
+              </button>
+            </div>
         </div>
       </div>
       {showRenewModal && (

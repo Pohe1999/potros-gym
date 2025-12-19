@@ -145,15 +145,17 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
               const time = new Date(visit.at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
               const isExpired = visit.member.expiry && new Date(visit.member.expiry + 'T23:59:59') < new Date()
               return (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-800 rounded hover:bg-gray-750 transition-colors">
+                <div key={idx} className="flex items-center justify-between p-3 bg-gray-800 rounded hover:bg-gray-750 transition-colors touch-manipulation">
                   <div className="flex items-center gap-3">
-                    <div className="text-2xl">{isExpired ? '⚠️' : '✅'}</div>
-                    <div>
-                      <div className="font-semibold">{visit.fullName}</div>
-                      <div className="text-xs text-gray-500">{visit.member.phone}</div>
+                    <div className={`flex items-center justify-center rounded-full w-10 h-10 ${isExpired ? 'bg-red-800 text-red-200' : 'bg-green-800 text-green-200'}`}>
+                      <span className="text-lg">{isExpired ? '⚠️' : '✅'}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-semibold truncate">{visit.fullName}</div>
+                      <div className="text-xs text-gray-500 truncate">{visit.member.phone}</div>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right ml-4">
                     <div className="text-sm font-semibold text-potros-red">{time}</div>
                     <div className="text-xs text-gray-500">{PLANS[visit.member.planType]?.label || visit.member.planType}</div>
                   </div>
