@@ -6,6 +6,7 @@ export const PLANS = {
   '15dias': { days: 15, price: 250, label: '15 Días' },
   mensualPromo: { days: 30, price: 400, label: 'Mensual Promo Dic' },
   mensual: { days: 30, price: 500, label: 'Mensual' },
+  parejas: { days: 30, price: 400, label: 'Parejas o Más' },
   anual: { days: 365, price: 5000, label: 'Anual' }
 }
 
@@ -19,7 +20,22 @@ function computeExpiry(joinDateISO, planType) {
   const p = PLANS[planType]
   if (!p) return null
   if (p.days === 0) return joinDateISO
+  
+  // Special case: Mensual Promo Dic expires on Feb 1, 2026
+  if (planType === 'mensualPromo') {
+    return '2026-02-01'
+  }
+  
   return addDays(joinDateISO, p.days)
+}
+
+function formatSpanishDate(isoDate) {
+  if (!isoDate) return ''
+  const date = new Date(isoDate + 'T00:00:00')
+  const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
+  const formatted = date.toLocaleDateString('es-ES', options)
+  // Capitalize first letter
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
 async function fetchJSON(url, options = {}) {
@@ -44,6 +60,7 @@ async function fetchJSON(url, options = {}) {
 const membersService = {
   PLANS,
   computeExpiry,
+  formatSpanishDate,
   getPlanInfo(planType) {
     return PLANS[planType] || null
   },
@@ -73,6 +90,9 @@ const membersService = {
   },
   async addQuickVisit(payload) {
     return fetchJSON(`${API_URL}/quick-visits`, { method: 'POST', body: JSON.stringify(payload) })
+  },
+  async getPayments() {
+    return fetchJSON(`${API_URL}/payments`)
   }
 }
 

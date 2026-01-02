@@ -48,12 +48,12 @@ export default function MemberStatusModal({ member, onClose, onChange = () => {}
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-900 p-3 rounded">
               <span className="text-sm text-gray-400 block">Ingreso</span>
-              <span className="font-semibold">{member.joinDate}</span>
+              <span className="font-semibold">{membersService.formatSpanishDate(member.joinDate)}</span>
             </div>
             {member.planType !== 'visita' && (
               <div className="bg-gray-900 p-3 rounded">
                 <span className="text-sm text-gray-400 block">Vencimiento</span>
-                <span className="font-semibold">{member.expiry}</span>
+                <span className="font-semibold">{membersService.formatSpanishDate(member.expiry)}</span>
               </div>
             )}
           </div>
@@ -104,8 +104,8 @@ export default function MemberStatusModal({ member, onClose, onChange = () => {}
               <option value="visita">Visita — ${PLANS['visita'].price}</option>
               <option value="semana">1 Semana — ${PLANS['semana'].price}</option>
               <option value="15dias">15 Días — ${PLANS['15dias'].price}</option>
-              <option value="mensualPromo">Mensual Promo Dic — ${PLANS['mensualPromo'].price}</option>
               <option value="mensual">Mensual — ${PLANS['mensual'].price}</option>
+              <option value="parejas">Parejas o Más — ${PLANS['parejas'].price}</option>
               <option value="anual">Anual — ${PLANS['anual'].price}</option>
             </select>
             {paymentType && (

@@ -25,6 +25,7 @@ const visitSchema = new mongoose.Schema({
 
 const paymentSchema = new mongoose.Schema({
   memberId: String,
+  memberName: String,
   at: String,
   type: String,
   amount: Number,

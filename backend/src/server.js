@@ -24,6 +24,7 @@ const PLANS = {
   '15dias': { days: 15, price: 250, label: '15 Días' },
   mensualPromo: { days: 30, price: 400, label: 'Mensual Promo Dic' },
   mensual: { days: 30, price: 500, label: 'Mensual' },
+  parejas: { days: 30, price: 400, label: 'Parejas o Más' },
   anual: { days: 365, price: 5000, label: 'Anual' }
 }
 
@@ -41,6 +42,12 @@ function computeExpiry(joinDateISO, planType) {
   const p = PLANS[planType]
   if (!p) return null
   if (p.days === 0) return joinDateISO
+  
+  // Special case: Mensual Promo Dic expires on Feb 1, 2026
+  if (planType === 'mensualPromo') {
+    return '2026-02-01'
+  }
+  
   return addDays(joinDateISO, p.days)
 }
 
@@ -122,7 +129,7 @@ app.get('/members', async (req, res) => {
 
 app.post('/members', async (req, res) => {
   const { firstName, paterno = '', materno = '', email = '', phone = '', joinDate, planType = 'mensual' } = req.body || {}
-  if (!firstName || !phone) return res.status(400).json({ error: 'firstName y phone son requeridos' })
+  if (!firstName || !phone || !paterno || !materno) return res.status(400).json({ error: 'firstName, phone, paterno y materno son requeridos' })
   const plan = PLANS[planType]
   if (!plan) return res.status(400).json({ error: 'planType inválido' })
 
@@ -132,11 +139,17 @@ app.post('/members', async (req, res) => {
   const expiry = computeExpiry(joinISO, planType)
   const createdAt = new Date().toISOString()
 
-  await Member.create({ id, firstName, paterno, materno, email, phone, joinDate: joinISO, planType, price, expiry, createdAt })
-  await Payment.create({ memberId: id, at: createdAt, type: planType, amount: price })
+  // Convert names to uppercase
+  const firstNameUpper = firstName.trim().toUpperCase()
+  const paternoUpper = paterno.trim().toUpperCase()
+  const maternoUpper = materno.trim().toUpperCase()
+  const fullName = `${firstNameUpper} ${paternoUpper} ${maternoUpper}`.trim()
+
+  await Member.create({ id, firstName: firstNameUpper, paterno: paternoUpper, materno: maternoUpper, email, phone, joinDate: joinISO, planType, price, expiry, createdAt })
+  await Payment.create({ memberId: id, memberName: fullName, at: createdAt, type: planType, amount: price })
 
   res.status(201).json({
-    id, firstName, paterno, materno, email, phone,
+    id, firstName: firstNameUpper, paterno: paternoUpper, materno: maternoUpper, email, phone,
     joinDate: joinISO,
     planType,
     price,
@@ -194,7 +207,8 @@ app.post('/members/:id/visit', async (req, res) => {
 
   if (paymentType) {
     const amount = paymentType === 'visita' ? PLANS['visita'].price : (PLANS[paymentType]?.price || member.price || 0)
-    await Payment.create({ memberId: id, at: timestamp, type: paymentType, amount })
+    const memberName = buildFullName(member)
+    await Payment.create({ memberId: id, memberName, at: timestamp, type: paymentType, amount })
   }
 
   const members = await loadMembers()
@@ -210,7 +224,8 @@ app.post('/members/:id/payment', async (req, res) => {
   if (!type) return res.status(400).json({ error: 'type requerido' })
   const amt = amount ?? PLANS[type]?.price ?? member.price ?? 0
   const timestamp = new Date().toISOString()
-  await Payment.create({ memberId: id, at: timestamp, type, amount: amt })
+  const memberName = buildFullName(member)
+  await Payment.create({ memberId: id, memberName, at: timestamp, type, amount: amt })
   const members = await loadMembers()
   const updated = members.find(m => m.id === id)
   res.json(updated)
@@ -233,6 +248,12 @@ app.post('/quick-visits', async (req, res) => {
   res.status(201).json({ id: qv._id, name: name.trim(), at: timestamp, amount })
 })
 
+// Get all payments with member names
+app.get('/payments', async (req, res) => {
+  const payments = await Payment.find().sort({ at: -1 })
+  res.json(payments.map(p => p.toObject()))
+})
+
 // Mantenimiento: Rellenar 'name' en visitas existentes
 app.post('/maintenance/backfill-visit-names', async (req, res) => {
   const toFix = await Visit.find({ $or: [ { name: { $exists: false } }, { name: null }, { name: '' } ] })
@@ -253,6 +274,23 @@ app.post('/maintenance/backfill-visit-names', async (req, res) => {
     }
   }
   res.json({ updated })
+})
+
+// Mantenimiento: Rellenar 'memberName' en pagos existentes
+app.post('/maintenance/backfill-payment-names', async (req, res) => {
+  const paymentsToFix = await Payment.find({ $or: [ { memberName: { $exists: false } }, { memberName: null }, { memberName: '' } ] })
+  let updated = 0
+  for (const p of paymentsToFix) {
+    if (p.memberId) {
+      const m = await Member.findOne({ id: p.memberId })
+      if (m) {
+        p.memberName = buildFullName(m)
+        await p.save()
+        updated++
+      }
+    }
+  }
+  res.json({ updated, message: `${updated} pagos actualizados con nombres de miembros` })
 })
 
 app.listen(PORT, () => {

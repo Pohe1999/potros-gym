@@ -7,12 +7,13 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
   const [unlocked, setUnlocked] = useState(false)
   const [error, setError] = useState('')
 
-  const planLabels = {
-    visita: 'Visitas',
+  const labels = {
+    visita: 'Visita',
     semana: '1 Semana',
     '15dias': '15 Días',
     mensualPromo: 'Mensual Promo Dic',
     mensual: 'Mensual',
+    parejas: 'Parejas o Más',
     anual: 'Anual'
   }
 
@@ -99,7 +100,7 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
             kind: 'payment',
             at: p.at,
             name: fullName,
-            label: planLabels[p.type] || p.type,
+            label: labels[p.type] || p.type,
             amount: p.amount || 0
           })
         }
@@ -130,6 +131,69 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
       setShowDetails(true)
     } else {
       setError('Contraseña incorrecta')
+    }
+  }
+
+  const exportToExcel = async () => {
+    try {
+      // Recopilar todos los pagos de miembros
+      const allPayments = []
+      
+      members.forEach(m => {
+        const fullName = `${m.firstName || m.name || ''} ${m.paterno || ''} ${m.materno || ''}`.trim()
+        ;(m.payments || []).forEach(p => {
+          allPayments.push({
+            at: p.at,
+            memberName: fullName,
+            type: p.type,
+            amount: p.amount || 0
+          })
+        })
+      })
+      
+      // Agregar visitas rápidas
+      quickVisits.forEach(v => {
+        if (v.amount > 0) {
+          allPayments.push({
+            at: v.at,
+            memberName: v.name || 'Visitante',
+            type: 'visita',
+            amount: v.amount || 0
+          })
+        }
+      })
+      
+      // Ordenar por fecha (más reciente primero)
+      allPayments.sort((a, b) => (b.at || '').localeCompare(a.at || ''))
+      
+      // Crear CSV content
+      let csvContent = 'Fecha,Hora,Nombre del Socio,Plan/Tipo,Monto\n'
+      
+      allPayments.forEach(payment => {
+        const date = new Date(payment.at)
+        const dateStr = date.toLocaleDateString('es-MX')
+        const timeStr = date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+        const name = payment.memberName || 'Sin nombre'
+        const planLabel = labels[payment.type] || payment.type
+        const amount = payment.amount || 0
+        
+        csvContent += `${dateStr},${timeStr},"${name}","${planLabel}",${amount}\n`
+      })
+      
+      // Crear blob y descargar
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      const today = new Date().toISOString().slice(0, 10)
+      link.setAttribute('href', url)
+      link.setAttribute('download', `pagos-potros-gym-${today}.csv`)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (err) {
+      console.error('Error al exportar:', err)
+      alert('Error al exportar los datos: ' + err.message)
     }
   }
 
@@ -195,6 +259,15 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
             <div className="text-3xl font-bold text-white mt-1">${summary.total.toLocaleString()}</div>
             <div className="text-xs text-blue-300 mt-1">{summary.count} pagos totales</div>
           </div>
+
+          {/* Botón de exportar a Excel */}
+          <button
+            onClick={exportToExcel}
+            className="w-full bg-green-600 hover:bg-green-700 p-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <span>📊</span>
+            <span>Exportar Base Completa a Excel</span>
+          </button>
 
           {/* Movimientos de hoy */}
           <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
@@ -263,7 +336,7 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
                 return (
                   <div key={k} className="bg-gray-800 p-3 rounded-lg">
                     <div className="flex justify-between items-center mb-1">
-                      <div className="text-sm text-gray-300">{planLabels[k] || k}</div>
+                      <div className="text-sm text-gray-300">{labels[k] || k}</div>
                       <div className="text-lg font-semibold text-potros-red">${v.toLocaleString()}</div>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
@@ -286,16 +359,6 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
             </div>
             <div className="text-xs text-purple-300 mt-1">Basado en promedio semanal</div>
           </div>
-
-          {/* Botón Descargar Análisis */}
-          <button
-            onClick={async () => {
-              await membersService.exportToExcel(members, quickVisits)
-            }}
-            className="w-full bg-green-600 hover:bg-green-700 p-4 rounded-lg font-bold text-white transition-colors flex items-center justify-center gap-2 mt-4"
-          >
-            📥 Descargar Análisis (Excel)
-          </button>
         </div>
       )}
     </div>

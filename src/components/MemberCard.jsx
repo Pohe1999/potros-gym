@@ -56,7 +56,7 @@ export default function MemberCard({ member, onChange }) {
               </div>
               <div>
                 <div className="text-xs text-gray-500 uppercase">Ingreso</div>
-                <div className="font-semibold">{member.joinDate}</div>
+                <div className="font-semibold">{membersService.formatSpanishDate(member.joinDate)}</div>
               </div>
               <div>
                 <div className="text-xs text-gray-500 uppercase">Vencimiento</div>
@@ -64,7 +64,7 @@ export default function MemberCard({ member, onChange }) {
                   <div className="text-sm text-yellow-300">Día único</div>
                 ) : (
                   <div className={`font-semibold ${expired ? 'text-red-400' : 'text-green-300'}`}>
-                    {member.expiry} {d !== null && !expired ? `(${d}d)` : ''}
+                    {membersService.formatSpanishDate(member.expiry)} {d !== null && !expired ? `(${d}d)` : ''}
                   </div>
                 )}
               </div>

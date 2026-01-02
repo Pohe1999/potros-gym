@@ -47,7 +47,7 @@ export default function RenewModal({ member, onClose, onSave }) {
 
         <div className="mb-6 p-3 bg-gray-800 rounded-lg">
           <div className="text-sm text-gray-400 mb-1">Vence el:</div>
-          <div className="text-lg font-bold text-potros-red">{newExpiry}</div>
+          <div className="text-lg font-bold text-potros-red">{membersService.formatSpanishDate(newExpiry)}</div>
         </div>
 
         <div className="mb-6 flex items-center gap-3">

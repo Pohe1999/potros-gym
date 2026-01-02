@@ -21,8 +21,8 @@ export default function MemberForm({ onSave }) {
   const submit = async (e) => {
     e.preventDefault()
     setError('')
-    if (!firstName.trim()) {
-      setError('El nombre es requerido')
+    if (!firstName.trim() || !paterno.trim() || !materno.trim()) {
+      setError('Nombre, apellido paterno y materno son requeridos')
       return
     }
     try {
@@ -59,28 +59,30 @@ export default function MemberForm({ onSave }) {
             <input 
               className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-lg" 
               value={firstName} 
-              onChange={e => setFirstName(e.target.value)} 
+              onChange={e => setFirstName(e.target.value.toUpperCase())} 
               required 
-              placeholder="Ej: Juan Carlos"
+              placeholder="Ej: JUAN CARLOS"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Apellido Paterno</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Apellido Paterno *</label>
               <input 
                 className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-base" 
                 value={paterno} 
-                onChange={e => setPaterno(e.target.value)}
-                placeholder="Ej: López" 
+                onChange={e => setPaterno(e.target.value.toUpperCase())}
+                placeholder="Ej: LÓPEZ" 
+                required
               />
             </div>
             <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Apellido Materno</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">Apellido Materno *</label>
               <input 
                 className="w-full p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-base" 
                 value={materno} 
-                onChange={e => setMaterno(e.target.value)}
-                placeholder="Ej: García" 
+                onChange={e => setMaterno(e.target.value.toUpperCase())}
+                placeholder="Ej: GARCÍA" 
+                required
               />
             </div>
           </div>
@@ -120,8 +122,8 @@ export default function MemberForm({ onSave }) {
               >
                 <option value="semana">📅 1 Semana — $150</option>
                 <option value="15dias">📅 15 Días — $250</option>
-                <option value="mensualPromo">📆 Mensual Promo Dic — $400</option>
                 <option value="mensual">📆 Mensual — $500</option>
+                <option value="parejas">👫 Parejas o Más — $400</option>
                 <option value="anual">🎉 Anual — $5,000</option>
               </select>
             </div>
@@ -134,7 +136,7 @@ export default function MemberForm({ onSave }) {
               </div>
               <div className="text-right">
                 <div className="text-sm text-gray-400">Vencimiento</div>
-                <div className="text-base md:text-lg font-semibold text-green-400">{expiryPreview}</div>
+                <div className="text-base md:text-lg font-semibold text-green-400">{membersService.formatSpanishDate(expiryPreview)}</div>
               </div>
             </div>
           </div>
