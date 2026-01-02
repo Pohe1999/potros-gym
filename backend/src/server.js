@@ -128,15 +128,29 @@ app.get('/members', async (req, res) => {
 })
 
 app.post('/members', async (req, res) => {
-  const { firstName, paterno = '', materno = '', email = '', phone = '', joinDate, planType = 'mensual' } = req.body || {}
+  const { firstName, paterno = '', materno = '', email = '', phone = '', joinDate, planType = 'mensual', quantity = 1 } = req.body || {}
   if (!firstName || !phone || !paterno || !materno) return res.status(400).json({ error: 'firstName, phone, paterno y materno son requeridos' })
   const plan = PLANS[planType]
   if (!plan) return res.status(400).json({ error: 'planType inválido' })
 
   const id = uid()
   const joinISO = joinDate || new Date().toISOString().slice(0, 10)
-  const price = plan.price
-  const expiry = computeExpiry(joinISO, planType)
+  const qty = Math.max(1, parseInt(quantity) || 1)
+  const basePrice = plan.price
+  const totalPrice = basePrice * qty
+  
+  // Calcular expiración con cantidad
+  let expiry
+  if (plan.days === 0) {
+    expiry = joinISO
+  } else if (planType === 'mensualPromo' && qty === 1) {
+    expiry = '2026-02-01'
+  } else {
+    const d = new Date(joinISO)
+    d.setDate(d.getDate() + (plan.days * qty))
+    expiry = d.toISOString().slice(0, 10)
+  }
+  
   const createdAt = new Date().toISOString()
 
   // Convert names to uppercase
@@ -145,17 +159,17 @@ app.post('/members', async (req, res) => {
   const maternoUpper = materno.trim().toUpperCase()
   const fullName = `${firstNameUpper} ${paternoUpper} ${maternoUpper}`.trim()
 
-  await Member.create({ id, firstName: firstNameUpper, paterno: paternoUpper, materno: maternoUpper, email, phone, joinDate: joinISO, planType, price, expiry, createdAt })
-  await Payment.create({ memberId: id, memberName: fullName, at: createdAt, type: planType, amount: price })
+  await Member.create({ id, firstName: firstNameUpper, paterno: paternoUpper, materno: maternoUpper, email, phone, joinDate: joinISO, planType, price: totalPrice, expiry, createdAt })
+  await Payment.create({ memberId: id, memberName: fullName, at: createdAt, type: planType, amount: totalPrice })
 
   res.status(201).json({
     id, firstName: firstNameUpper, paterno: paternoUpper, materno: maternoUpper, email, phone,
     joinDate: joinISO,
     planType,
-    price,
+    price: totalPrice,
     expiry,
     visits: [],
-    payments: [{ at: createdAt, type: planType, amount: price }]
+    payments: [{ at: createdAt, type: planType, amount: totalPrice }]
   })
 })
 

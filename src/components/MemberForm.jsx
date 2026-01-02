@@ -8,15 +8,29 @@ export default function MemberForm({ onSave }) {
   const [phone, setPhone] = useState('')
   const [joinDate, setJoinDate] = useState(new Date().toISOString().slice(0,10))
   const [planType, setPlanType] = useState('mensual')
+  const [quantity, setQuantity] = useState(1)
   const [pricePreview, setPricePreview] = useState(membersService.PLANS['mensual'].price)
   const [expiryPreview, setExpiryPreview] = useState(membersService.computeExpiry(joinDate, 'mensual'))
   const [error, setError] = useState('')
 
   useEffect(() => {
     const p = membersService.PLANS[planType] || { price: 0 }
-    setPricePreview(p.price)
-    setExpiryPreview(membersService.computeExpiry(joinDate, planType))
-  }, [planType, joinDate])
+    const baseDays = p.days || 0
+    const totalDays = baseDays === 0 ? 0 : baseDays * quantity
+    
+    setPricePreview(p.price * quantity)
+    
+    // Calcular fecha de expiración con multiplicador
+    if (planType === 'visita') {
+      setExpiryPreview(joinDate)
+    } else if (planType === 'mensualPromo' && quantity === 1) {
+      setExpiryPreview('2026-02-01')
+    } else {
+      const d = new Date(joinDate)
+      d.setDate(d.getDate() + totalDays)
+      setExpiryPreview(d.toISOString().slice(0, 10))
+    }
+  }, [planType, joinDate, quantity])
 
   const submit = async (e) => {
     e.preventDefault()
@@ -26,13 +40,14 @@ export default function MemberForm({ onSave }) {
       return
     }
     try {
-      await membersService.addMember({ firstName, paterno, materno, phone, joinDate, planType })
+      await membersService.addMember({ firstName, paterno, materno, phone, joinDate, planType, quantity })
       setFirstName('')
       setPaterno('')
       setMaterno('')
       setPhone('')
       setJoinDate(new Date().toISOString().slice(0,10))
       setPlanType('mensual')
+      setQuantity(1)
       onSave()
     } catch (err) {
       setError(err.message)
@@ -128,11 +143,45 @@ export default function MemberForm({ onSave }) {
               </select>
             </div>
           </div>
+          
+          <div>
+            <label className="block text-xs md:text-sm font-medium text-gray-300 mb-1">
+              {planType === 'anual' ? 'Cantidad de años' : planType === '15dias' ? 'Cantidad de períodos' : 'Cantidad de meses'}
+            </label>
+            <div className="flex gap-2 items-center">
+              <button
+                type="button"
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="px-3 py-3 bg-gray-900 border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors font-semibold text-potros-red"
+              >
+                −
+              </button>
+              <input 
+                type="number" 
+                min="1" 
+                max="24"
+                className="flex-1 p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all text-sm md:text-base text-center font-semibold" 
+                value={quantity}
+                onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+              />
+              <button
+                type="button"
+                onClick={() => setQuantity(quantity + 1)}
+                className="px-3 py-3 bg-gray-900 border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors font-semibold text-potros-red"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          
           <div className="bg-gray-900 p-2 md:p-4 rounded-lg border border-gray-700">
-            <div className="flex justify-between items-center">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-sm text-gray-400">Precio del plan</div>
-                <div className="text-2xl md:text-3xl font-bold text-potros-red">${pricePreview}</div>
+                <div className="text-sm text-gray-400">Precio total</div>
+                <div className="text-2xl md:text-3xl font-bold text-potros-red">${pricePreview.toLocaleString()}</div>
+                {quantity > 1 && (
+                  <div className="text-xs text-gray-500 mt-1">${(pricePreview / quantity).toLocaleString()} × {quantity}</div>
+                )}
               </div>
               <div className="text-right">
                 <div className="text-sm text-gray-400">Vencimiento</div>
