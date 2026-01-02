@@ -12,6 +12,7 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
     semana: '1 Semana',
     '15dias': '15 Días',
     mensualPromo: 'Mensual Promo Dic',
+    estudiante: 'Promo Estudiantes',
     mensual: 'Mensual',
     parejas: 'Parejas o Más',
     anual: 'Anual'

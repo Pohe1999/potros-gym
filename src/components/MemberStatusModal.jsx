@@ -104,6 +104,7 @@ export default function MemberStatusModal({ member, onClose, onChange = () => {}
               <option value="visita">Visita — ${PLANS['visita'].price}</option>
               <option value="semana">1 Semana — ${PLANS['semana'].price}</option>
               <option value="15dias">15 Días — ${PLANS['15dias'].price}</option>
+              <option value="estudiante">Promo Estudiantes — ${PLANS['estudiante'].price}</option>
               <option value="mensual">Mensual — ${PLANS['mensual'].price}</option>
               <option value="parejas">Parejas o Más — ${PLANS['parejas'].price}</option>
               <option value="anual">Anual — ${PLANS['anual'].price}</option>

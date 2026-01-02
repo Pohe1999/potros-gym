@@ -137,6 +137,7 @@ export default function MemberForm({ onSave }) {
               >
                 <option value="semana">📅 1 Semana — $150</option>
                 <option value="15dias">📅 15 Días — $250</option>
+                <option value="estudiante">🎓 Promo Estudiantes — $350</option>
                 <option value="mensual">📆 Mensual — $500</option>
                 <option value="parejas">👫 Parejas o Más — $400</option>
                 <option value="anual">🎉 Anual — $5,000</option>
