@@ -9,10 +9,12 @@ export default function RenewModal({ member, onClose, onSave }) {
   const newExpiry = membersService.computeExpiry(membersService.getTodayLocal(), planType)
 
   const handleRenew = async () => {
-    const updates = { 
-      planType, 
+    const updates = {
+      planType,
       price: planInfo.price,
-      expiry: newExpiry 
+      // Enviar la fecha de inicio de la nueva membresía (hoy en zona México)
+      joinDate: membersService.getTodayLocal()
+      // El backend recalcula expiry con base en joinDate y planType
     }
 
     await membersService.updateMember(member.id, updates)
