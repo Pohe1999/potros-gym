@@ -31,10 +31,10 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
       weekCount: 0,
       monthCount: 0
     }
-    const today = new Date().toISOString().slice(0, 10)
+    const today = membersService.getTodayLocal()
     const now = new Date()
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    const weekAgo = membersService.getLocalDateAgo(7)
+    const monthAgo = membersService.getLocalDateAgo(30)
     
     // Contar pagos de miembros
     members.forEach(m => {
@@ -90,7 +90,7 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
   }, [members, quickVisits])
 
   const todayItems = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = membersService.getTodayLocal()
     const items = []
 
     members.forEach(m => {
@@ -185,7 +185,7 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
       const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
-      const today = new Date().toISOString().slice(0, 10)
+      const today = membersService.getTodayLocal()
       link.setAttribute('href', url)
       link.setAttribute('download', `pagos-potros-gym-${today}.csv`)
       link.style.visibility = 'hidden'

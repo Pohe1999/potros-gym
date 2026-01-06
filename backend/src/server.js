@@ -33,10 +33,31 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }
 
+// Genera timestamp en formato ISO pero ajustado a hora local de México
+function getLocalTimestamp() {
+  // Construir fecha/hora en zona America/Mexico_City y devolver como 'YYYY-MM-DDTHH:mm:ss'
+  const fmt = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'America/Mexico_City',
+    hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  })
+  // fmt.format returns 'YYYY-MM-DD HH:mm:ss' for sv-SE
+  const s = fmt.format(new Date())
+  return s.replace(' ', 'T')
+}
+
+// Obtiene la fecha local en formato YYYY-MM-DD
+function getLocalDate() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date())
+}
+
 function addDays(iso, days) {
-  const d = new Date(iso)
-  d.setDate(d.getDate() + Number(days || 0))
-  return d.toISOString().slice(0, 10)
+  // iso expected 'YYYY-MM-DD'
+  const [y, m, d] = (iso || '').split('-').map(Number)
+  const baseUtc = Date.UTC(y, (m || 1) - 1, d || 1)
+  const added = new Date(baseUtc + Number(days || 0) * 24 * 60 * 60 * 1000)
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(added)
 }
 
 function computeExpiry(joinDateISO, planType) {
@@ -95,10 +116,20 @@ app.use(cors({
       'http://127.0.0.1:5173',
       'http://127.0.0.1:4000',
       'https://potros-sistema.netlify.app',
+      'https://www.potros-sistema.netlify.app',
       'https://potros-gym.onrender.com'
     ]
+
+    const allowedPatterns = [
+      /\.netlify\.app$/, // permite previews de Netlify
+      /\.onrender\.com$/ // permite instancias de Render
+    ]
     
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      allowedPatterns.some(re => re.test(origin))
+    ) {
       callback(null, true)
     } else {
       callback(new Error('Not allowed by CORS'))
@@ -135,7 +166,7 @@ app.post('/members', async (req, res) => {
   if (!plan) return res.status(400).json({ error: 'planType inválido' })
 
   const id = uid()
-  const joinISO = joinDate || new Date().toISOString().slice(0, 10)
+  const joinISO = joinDate || getLocalDate()
   const qty = Math.max(1, parseInt(quantity) || 1)
   const basePrice = plan.price
   const totalPrice = basePrice * qty
@@ -147,12 +178,10 @@ app.post('/members', async (req, res) => {
   } else if (planType === 'mensualPromo' && qty === 1) {
     expiry = '2026-02-01'
   } else {
-    const d = new Date(joinISO)
-    d.setDate(d.getDate() + (plan.days * qty))
-    expiry = d.toISOString().slice(0, 10)
+    expiry = addDays(joinISO, plan.days * qty)
   }
   
-  const createdAt = new Date().toISOString()
+  const createdAt = getLocalTimestamp()
 
   // Convert names to uppercase
   const firstNameUpper = firstName.trim().toUpperCase()
@@ -216,7 +245,7 @@ app.post('/members/:id/visit', async (req, res) => {
   const member = await Member.findOne({ id })
   if (!member) return res.status(404).json({ error: 'No encontrado' })
 
-  const timestamp = new Date().toISOString()
+  const timestamp = getLocalTimestamp()
   const name = buildFullName(member)
   await Visit.create({ memberId: id, name, at: timestamp, method, paymentType })
 
@@ -238,7 +267,7 @@ app.post('/members/:id/payment', async (req, res) => {
   if (!member) return res.status(404).json({ error: 'No encontrado' })
   if (!type) return res.status(400).json({ error: 'type requerido' })
   const amt = amount ?? PLANS[type]?.price ?? member.price ?? 0
-  const timestamp = new Date().toISOString()
+  const timestamp = getLocalTimestamp()
   const memberName = buildFullName(member)
   await Payment.create({ memberId: id, memberName, at: timestamp, type, amount: amt })
   const members = await loadMembers()
@@ -254,7 +283,7 @@ app.get('/quick-visits', async (req, res) => {
 app.post('/quick-visits', async (req, res) => {
   const { name, amount = 50 } = req.body || {}
   if (!name) return res.status(400).json({ error: 'name requerido' })
-  const timestamp = new Date().toISOString()
+  const timestamp = getLocalTimestamp()
   const qv = await QuickVisit.create({ name: name.trim(), at: timestamp, amount })
   
   // Auto-register visitor entry (with name)

@@ -11,10 +11,19 @@ export const PLANS = {
   anual: { days: 365, price: 5000, label: 'Anual' }
 }
 
+// Obtiene la fecha local en formato YYYY-MM-DD en la zona America/Mexico_City
+function getTodayLocal() {
+  // 'en-CA' produce YYYY-MM-DD que es fácil de parsear
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date())
+}
+
 function addDays(iso, days) {
-  const d = new Date(iso)
-  d.setDate(d.getDate() + Number(days || 0))
-  return d.toISOString().slice(0, 10)
+  // iso = 'YYYY-MM-DD'
+  const [y, m, d] = (iso || '').split('-').map(Number)
+  const baseUtc = Date.UTC(y, (m || 1) - 1, d || 1)
+  const added = new Date(baseUtc + Number(days || 0) * 24 * 60 * 60 * 1000)
+  // Formatear en zona de México a YYYY-MM-DD
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(added)
 }
 
 function computeExpiry(joinDateISO, planType) {
@@ -32,8 +41,9 @@ function computeExpiry(joinDateISO, planType) {
 
 function formatSpanishDate(isoDate) {
   if (!isoDate) return ''
-  const date = new Date(isoDate + 'T00:00:00')
-  const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
+  // Mostrar la fecha respetando la zona de México
+  const date = new Date((isoDate || '') + 'T00:00:00')
+  const options = { timeZone: 'America/Mexico_City', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
   const formatted = date.toLocaleDateString('es-ES', options)
   // Capitalize first letter
   return formatted.charAt(0).toUpperCase() + formatted.slice(1)
@@ -62,6 +72,8 @@ const membersService = {
   PLANS,
   computeExpiry,
   formatSpanishDate,
+  getTodayLocal,
+  getLocalDateAgo,
   getPlanInfo(planType) {
     return PLANS[planType] || null
   },
@@ -95,6 +107,15 @@ const membersService = {
   async getPayments() {
     return fetchJSON(`${API_URL}/payments`)
   }
+}
+
+// Helper para calcular fechas en zona Mexico (YYYY-MM-DD) hace X días
+function getLocalDateAgo(daysAgo) {
+  const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date())
+  const [y, m, d] = todayStr.split('-').map(Number)
+  const baseUtc = Date.UTC(y, m - 1, d)
+  const target = new Date(baseUtc - daysAgo * 24 * 60 * 60 * 1000)
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(target)
 }
 
 export default membersService

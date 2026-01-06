@@ -6,7 +6,7 @@ export default function RenewModal({ member, onClose, onSave }) {
   const [recordPayment, setRecordPayment] = useState(false)
 
   const planInfo = membersService.PLANS[planType] || { price: 0, label: 'Mensual' }
-  const newExpiry = membersService.computeExpiry(new Date().toISOString().slice(0, 10), planType)
+  const newExpiry = membersService.computeExpiry(membersService.getTodayLocal(), planType)
 
   const handleRenew = async () => {
     const updates = { 

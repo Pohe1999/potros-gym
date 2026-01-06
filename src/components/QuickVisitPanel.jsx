@@ -53,7 +53,7 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
   }
 
   const todayVisits = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = membersService.getTodayLocal()
     const memberVisits = []
     
     members.forEach(m => {

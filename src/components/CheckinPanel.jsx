@@ -45,7 +45,7 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
 
   // Obtener últimas visitas de hoy
   const todayVisits = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = membersService.getTodayLocal()
     const visits = []
     members.forEach(m => {
       (m.visits || []).forEach(v => {

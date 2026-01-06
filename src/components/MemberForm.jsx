@@ -6,7 +6,7 @@ export default function MemberForm({ onSave }) {
   const [paterno, setPaterno] = useState('')
   const [materno, setMaterno] = useState('')
   const [phone, setPhone] = useState('')
-  const [joinDate, setJoinDate] = useState(new Date().toISOString().slice(0,10))
+  const [joinDate, setJoinDate] = useState(membersService.getTodayLocal())
   const [planType, setPlanType] = useState('mensual')
   const [quantity, setQuantity] = useState(1)
   const [pricePreview, setPricePreview] = useState(membersService.PLANS['mensual'].price)
@@ -26,9 +26,7 @@ export default function MemberForm({ onSave }) {
     } else if (planType === 'mensualPromo' && quantity === 1) {
       setExpiryPreview('2026-02-01')
     } else {
-      const d = new Date(joinDate)
-      d.setDate(d.getDate() + totalDays)
-      setExpiryPreview(d.toISOString().slice(0, 10))
+      setExpiryPreview(membersService.addDays(joinDate, totalDays))
     }
   }, [planType, joinDate, quantity])
 
@@ -45,7 +43,7 @@ export default function MemberForm({ onSave }) {
       setPaterno('')
       setMaterno('')
       setPhone('')
-      setJoinDate(new Date().toISOString().slice(0,10))
+      setJoinDate(membersService.getTodayLocal())
       setPlanType('mensual')
       setQuantity(1)
       onSave()

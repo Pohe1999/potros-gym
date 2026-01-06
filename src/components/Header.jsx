@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react'
+import membersService from '../services/membersService'
 import SidebarCounters from './SidebarCounters'
 
 export default function Header({ members = [] }) {
   const stats = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = membersService.getTodayLocal()
     const now = new Date()
 
     const activeCount = members.filter(m => {
