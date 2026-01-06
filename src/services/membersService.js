@@ -73,6 +73,7 @@ const membersService = {
   computeExpiry,
   formatSpanishDate,
   getTodayLocal,
+  addDays,
   getLocalDateAgo,
   getPlanInfo(planType) {
     return PLANS[planType] || null
