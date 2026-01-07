@@ -33,12 +33,15 @@ export default function Header({ members = [] }) {
 
   return (
     <header className="bg-potros-black border-b-2 border-potros-red shadow-lg">
-      <div className="container-max flex items-start py-4 gap-4">
-        <div className="flex-1 flex items-center space-x-4">
-          <img src="/logo.png" alt="POTROS GYM" className="h-24 w-24 md:h-28 md:w-28 object-contain drop-shadow-lg" />
+      <div className="container-max flex items-center justify-between py-2 md:py-4 gap-2 md:gap-4">
+        <div className="flex-1 flex items-center space-x-2 md:space-x-4">
+          <img src="/logo.png" alt="POTROS GYM" className="h-16 w-16 md:h-24 md:w-24 lg:h-28 lg:w-28 object-contain drop-shadow-lg" />
           <div>
-            <h1 className="text-3xl md:text-5xl font-bold text-white">Potros GYM</h1>
-            <p className="text-xs md:text-sm text-gray-400">{stats.todayDate}</p>
+            <div className="flex items-center gap-2 md:gap-3">
+              <h1 className="text-xl md:text-3xl lg:text-5xl font-bold text-white">Potros GYM</h1>
+              <span className="text-[10px] md:text-xs text-white font-mono bg-gray-800 px-1.5 py-0.5 md:px-2 md:py-1 rounded border border-gray-700">v2.0.0</span>
+            </div>
+            <p className="text-[10px] md:text-xs lg:text-sm text-gray-400">{stats.todayDate}</p>
           </div>
         </div>
         {/* Desktop / tablet: vertical sidebar counters */}

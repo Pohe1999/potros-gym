@@ -11,7 +11,7 @@ const memberSchema = new mongoose.Schema({
   planType: String,
   price: Number,
   expiry: String,
-  createdAt: { type: Date, default: Date.now }
+  createdAt: String
 })
 
 const visitSchema = new mongoose.Schema({
@@ -20,7 +20,7 @@ const visitSchema = new mongoose.Schema({
   at: String,
   method: String,
   paymentType: String,
-  createdAt: { type: Date, default: Date.now }
+  createdAt: String
 })
 
 const paymentSchema = new mongoose.Schema({
@@ -29,14 +29,14 @@ const paymentSchema = new mongoose.Schema({
   at: String,
   type: String,
   amount: Number,
-  createdAt: { type: Date, default: Date.now }
+  createdAt: String
 })
 
 const quickVisitSchema = new mongoose.Schema({
   name: String,
   at: String,
   amount: Number,
-  createdAt: { type: Date, default: Date.now }
+  createdAt: String
 })
 
 export const Member = mongoose.model('Member', memberSchema)

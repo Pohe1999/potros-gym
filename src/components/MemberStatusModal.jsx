@@ -8,20 +8,92 @@ function daysUntil(dateISO) {
   return diff
 }
 
-export default function MemberStatusModal({ member, onClose, onChange = () => {}, onPaymentDone = () => {} }) {
-  const [paymentType, setPaymentType] = useState('')
-
+export default function MemberStatusModal({ member, onClose, onChange = () => {}, onPaymentDone = () => {}, onNavigateToMembers = () => {}, onShowToast }) {
   const planInfo = membersService.getPlanInfo(member.planType) || { label: member.planType, price: 0 }
   const d = member.expiry ? daysUntil(member.expiry) : null
   const expired = d !== null ? d < 0 : false
   const fullName = `${member.firstName || member.name || ''} ${member.paterno || ''} ${member.materno || ''}`.trim()
+  const [renewPlan, setRenewPlan] = useState(member.planType === 'visita' ? 'mensual' : member.planType || 'mensual')
+  const [saving, setSaving] = useState(false)
 
-  const handlePayment = async () => {
-    if (!paymentType) return
-    await membersService.registerPayment(member.id, { type: paymentType })
-    onChange()
-    onPaymentDone(true) // Signal that payment was done
-    onClose()
+  const handleRegisterEntry = async () => {
+    // Register a manual entry for this member (no payment)
+    try {
+      await membersService.registerVisit(member.id, { method: 'manual' })
+      onChange()
+      onClose()
+    } catch (err) {
+      console.error('Error registrando entrada:', err)
+      alert('Error registrando la entrada: ' + err.message)
+    }
+  }
+
+  const handleRenew = async () => {
+    try {
+      setSaving(true)
+      const today = membersService.getTodayLocal()
+      const plan = PLANS[renewPlan]
+      if (!plan) throw new Error('Plan no válido')
+
+      const hasVisitToday = (member.visits || []).some(v => v.at && v.at.startsWith(today))
+
+      // 1) Actualizar membresía con fecha de inicio hoy
+      await membersService.updateMember(member.id, { planType: renewPlan, joinDate: today })
+
+      // 2) Registrar pago del plan (ingreso del día)
+      await membersService.registerPayment(member.id, { type: renewPlan })
+
+      // 3) Registrar la entrada de hoy (una sola vez)
+      if (!hasVisitToday) {
+        await membersService.registerVisit(member.id, { method: 'manual' })
+      }
+
+      onPaymentDone(true) // evita un segundo registro desde el cierre del modal
+      onChange()
+      onClose()
+    } catch (err) {
+      console.error('Error al renovar:', err)
+      alert('Error al renovar: ' + err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleRenewAndClose = async () => {
+    try {
+      setSaving(true)
+      const today = membersService.getTodayLocal()
+      const plan = PLANS[renewPlan]
+      if (!plan) throw new Error('Plan no válido')
+
+      const hasVisitToday = (member.visits || []).some(v => v.at && v.at.startsWith(today))
+
+      // 1) Actualizar membresía con fecha de inicio hoy
+      await membersService.updateMember(member.id, { planType: renewPlan, joinDate: today })
+
+      // 2) Registrar pago del plan (ingreso del día)
+      await membersService.registerPayment(member.id, { type: renewPlan })
+
+      // 3) Registrar la entrada de hoy (una sola vez)
+      if (!hasVisitToday) {
+        await membersService.registerVisit(member.id, { method: 'manual' })
+      }
+
+      if (onShowToast) {
+        const fullName = `${member.firstName} ${member.paterno}`.trim()
+        const planLabel = membersService.PLANS[renewPlan]?.label || renewPlan
+        onShowToast(`${fullName} renovó ${planLabel}`, 'success')
+      }
+
+      onPaymentDone(true)
+      onChange()
+      onClose()
+    } catch (err) {
+      console.error('Error al renovar:', err)
+      alert('Error al renovar: ' + err.message)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -92,32 +164,45 @@ export default function MemberStatusModal({ member, onClose, onChange = () => {}
           </div>
         )}
 
+        {/* Renovar dentro del panel */}
         <div className="mt-6 bg-gray-800 p-4 rounded-lg border border-gray-700">
-          <label className="block text-sm font-semibold text-gray-300 mb-3">💳 Registrar pago (opcional)</label>
-          <div className="flex gap-3">
-            <select 
-              className="flex-1 p-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-potros-red focus:outline-none transition-all" 
-              value={paymentType} 
-              onChange={e=>setPaymentType(e.target.value)}
-            >
-              <option value="">Seleccionar tipo de pago...</option>
-              <option value="visita">Visita — ${PLANS['visita'].price}</option>
-              <option value="semana">1 Semana — ${PLANS['semana'].price}</option>
-              <option value="15dias">15 Días — ${PLANS['15dias'].price}</option>
-              <option value="estudiante">Promo Estudiantes — ${PLANS['estudiante'].price}</option>
-              <option value="mensual">Mensual — ${PLANS['mensual'].price}</option>
-              <option value="parejas">Parejas o Más — ${PLANS['parejas'].price}</option>
-              <option value="anual">Anual — ${PLANS['anual'].price}</option>
-            </select>
-            {paymentType && (
-              <button 
-                onClick={handlePayment} 
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+          <div className="text-sm text-gray-300 mb-3 font-semibold">Renovar Membresía</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Plan</label>
+              <select
+                value={renewPlan}
+                onChange={e => setRenewPlan(e.target.value)}
+                className="w-full p-3 rounded-lg bg-gray-900 border-2 border-gray-700 focus:border-potros-red focus:outline-none text-white text-sm"
               >
-                ✅ Registrar ${PLANS[paymentType]?.price}
+                {Object.entries(PLANS)
+                  .filter(([key]) => key !== 'visita')
+                  .map(([key, plan]) => (
+                  <option key={key} value={key}>
+                    {plan.label} - ${plan.price}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleRenewAndClose}
+                disabled={saving}
+                className="flex-1 px-4 py-3 bg-potros-red hover:bg-red-700 disabled:opacity-60 text-white rounded-lg font-semibold transition-colors"
+              >
+                {saving ? 'Procesando...' : 'Renovar y cobrar hoy'}
               </button>
-            )}
+            </div>
           </div>
+          <div className="text-[11px] text-gray-400 mt-2">Al renovar se registra el pago en ingresos de hoy y una sola entrada para no duplicar visitas.</div>
+        </div>
+
+        <div className="mt-6 bg-gray-800 p-4 rounded-lg border border-gray-700 text-center space-y-3">
+          <div className="text-sm text-gray-300">Acciones</div>
+          <div className="flex flex-col md:flex-row gap-3 justify-center">
+            <button onClick={handleRegisterEntry} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">Registrar Entrada</button>
+          </div>
+          <div className="text-xs text-gray-400">La renovación arriba cobra hoy y registra una sola entrada.</div>
         </div>
 
         <div className="mt-6 text-center">

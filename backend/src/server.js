@@ -36,15 +36,28 @@ function uid() {
 // Genera timestamp en formato ISO pero ajustado a hora local de México
 function getLocalTimestamp() {
   // Construir fecha/hora en zona America/Mexico_City y devolver como 'YYYY-MM-DDTHH:mm:ss'
-  const fmt = new Intl.DateTimeFormat('sv-SE', {
-    timeZone: 'America/Mexico_City',
-    hour12: false,
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit'
-  })
-  // fmt.format returns 'YYYY-MM-DD HH:mm:ss' for sv-SE
-  const s = fmt.format(new Date())
-  return s.replace(' ', 'T')
+  // Usa offset manual (UTC-6) como fallback si Intl falla
+  try {
+    const fmt = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: 'America/Mexico_City',
+      hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    })
+    const s = fmt.format(new Date())
+    return s.replace(' ', 'T')
+  } catch (e) {
+    // Fallback: calcular manualmente con offset -6 horas (UTC-6 es CST México)
+    const now = new Date()
+    const mexicoTime = new Date(now.getTime() - 6 * 60 * 60 * 1000) // UTC a UTC-6
+    const y = mexicoTime.getUTCFullYear()
+    const m = String(mexicoTime.getUTCMonth() + 1).padStart(2, '0')
+    const d = String(mexicoTime.getUTCDate()).padStart(2, '0')
+    const h = String(mexicoTime.getUTCHours()).padStart(2, '0')
+    const min = String(mexicoTime.getUTCMinutes()).padStart(2, '0')
+    const s = String(mexicoTime.getUTCSeconds()).padStart(2, '0')
+    return `${y}-${m}-${d}T${h}:${min}:${s}`
+  }
 }
 
 // Obtiene la fecha local en formato YYYY-MM-DD
@@ -113,14 +126,18 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:4000',
+      'http://localhost:3000',
       'http://127.0.0.1:5173',
       'http://127.0.0.1:4000',
+      'http://127.0.0.1:3000',
       'https://potros-sistema.netlify.app',
       'https://www.potros-sistema.netlify.app',
       'https://potros-gym.onrender.com'
     ]
 
     const allowedPatterns = [
+      /localhost:\d+$/, // permite cualquier puerto local
+      /127\.0\.0\.1:\d+$/, // permite 127.0.0.1 con cualquier puerto
       /\.netlify\.app$/, // permite previews de Netlify
       /\.onrender\.com$/ // permite instancias de Render
     ]
@@ -132,6 +149,7 @@ app.use(cors({
     ) {
       callback(null, true)
     } else {
+      console.warn(`CORS: Origen bloqueado: ${origin}`)
       callback(new Error('Not allowed by CORS'))
     }
   },
@@ -190,7 +208,9 @@ app.post('/members', async (req, res) => {
   const fullName = `${firstNameUpper} ${paternoUpper} ${maternoUpper}`.trim()
 
   await Member.create({ id, firstName: firstNameUpper, paterno: paternoUpper, materno: maternoUpper, email, phone, joinDate: joinISO, planType, price: totalPrice, expiry, createdAt })
-  await Payment.create({ memberId: id, memberName: fullName, at: createdAt, type: planType, amount: totalPrice })
+  await Payment.create({ memberId: id, memberName: fullName, at: createdAt, type: planType, amount: totalPrice, createdAt })
+  // Auto-register entry for new member (method='new-member' distinguishes it from paid visits)
+  await Visit.create({ memberId: id, name: fullName, at: createdAt, method: 'new-member', paymentType: null, createdAt })
 
   res.status(201).json({
     id, firstName: firstNameUpper, paterno: paternoUpper, materno: maternoUpper, email, phone,
@@ -247,12 +267,12 @@ app.post('/members/:id/visit', async (req, res) => {
 
   const timestamp = getLocalTimestamp()
   const name = buildFullName(member)
-  await Visit.create({ memberId: id, name, at: timestamp, method, paymentType })
+  await Visit.create({ memberId: id, name, at: timestamp, method, paymentType, createdAt: timestamp })
 
   if (paymentType) {
     const amount = paymentType === 'visita' ? PLANS['visita'].price : (PLANS[paymentType]?.price || member.price || 0)
     const memberName = buildFullName(member)
-    await Payment.create({ memberId: id, memberName, at: timestamp, type: paymentType, amount })
+    await Payment.create({ memberId: id, memberName, at: timestamp, type: paymentType, amount, createdAt: timestamp })
   }
 
   const members = await loadMembers()
@@ -269,7 +289,7 @@ app.post('/members/:id/payment', async (req, res) => {
   const amt = amount ?? PLANS[type]?.price ?? member.price ?? 0
   const timestamp = getLocalTimestamp()
   const memberName = buildFullName(member)
-  await Payment.create({ memberId: id, memberName, at: timestamp, type, amount: amt })
+  await Payment.create({ memberId: id, memberName, at: timestamp, type, amount: amt, createdAt: timestamp })
   const members = await loadMembers()
   const updated = members.find(m => m.id === id)
   res.json(updated)
@@ -283,11 +303,23 @@ app.get('/quick-visits', async (req, res) => {
 app.post('/quick-visits', async (req, res) => {
   const { name, amount = 50 } = req.body || {}
   if (!name) return res.status(400).json({ error: 'name requerido' })
+  // Prevent creating a quick-visit for a name that exactly matches a registered member
+  try {
+    const members = await Member.find()
+    const requested = (name || '').toString().trim().toLowerCase()
+    const match = members.find(m => buildFullName(m).toLowerCase() === requested)
+    if (match) {
+      return res.status(400).json({ error: 'El nombre coincide con un socio registrado. Usa el registro de entrada para anotar su entrada.' })
+    }
+  } catch (e) {
+    console.error('Error buscando miembros al validar quick-visit:', e.message)
+    // proceed; we don't want to block quick visits if member lookup fails
+  }
   const timestamp = getLocalTimestamp()
-  const qv = await QuickVisit.create({ name: name.trim(), at: timestamp, amount })
+  const qv = await QuickVisit.create({ name: name.trim(), at: timestamp, amount, createdAt: timestamp })
   
   // Auto-register visitor entry (with name)
-  await Visit.create({ memberId: 'visitor', name: name.trim(), at: timestamp, method: 'quick-visit', paymentType: 'visita' })
+  await Visit.create({ memberId: 'visitor', name: name.trim(), at: timestamp, method: 'quick-visit', paymentType: 'visita', createdAt: timestamp })
   
   res.status(201).json({ id: qv._id, name: name.trim(), at: timestamp, amount })
 })

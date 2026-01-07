@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import membersService from '../services/membersService'
 
-export default function MemberForm({ onSave }) {
+export default function MemberForm({ onSave, onShowToast }) {
   const [firstName, setFirstName] = useState('')
   const [paterno, setPaterno] = useState('')
   const [materno, setMaterno] = useState('')
@@ -12,6 +12,7 @@ export default function MemberForm({ onSave }) {
   const [pricePreview, setPricePreview] = useState(membersService.PLANS['mensual'].price)
   const [expiryPreview, setExpiryPreview] = useState(membersService.computeExpiry(joinDate, 'mensual'))
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     const p = membersService.PLANS[planType] || { price: 0 }
@@ -38,7 +39,7 @@ export default function MemberForm({ onSave }) {
       return
     }
     try {
-      await membersService.addMember({ firstName, paterno, materno, phone, joinDate, planType, quantity })
+      const created = await membersService.addMember({ firstName, paterno, materno, phone, joinDate, planType, quantity })
       setFirstName('')
       setPaterno('')
       setMaterno('')
@@ -46,6 +47,10 @@ export default function MemberForm({ onSave }) {
       setJoinDate(membersService.getTodayLocal())
       setPlanType('mensual')
       setQuantity(1)
+      // Show success toast with automatic entry info
+      if (onShowToast) {
+        onShowToast(`${created.firstName} ${created.paterno} registrado. Entrada hoy.`, 'success')
+      }
       onSave()
     } catch (err) {
       setError(err.message)

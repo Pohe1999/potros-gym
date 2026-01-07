@@ -6,12 +6,22 @@ import MemberForm from './components/MemberForm'
 import CheckinPanel from './components/CheckinPanel'
 import QuickVisitPanel from './components/QuickVisitPanel'
 import IncomePanel from './components/IncomePanel'
+import Toast from './components/Toast'
 import membersService from './services/membersService'
 
 function App() {
   const [members, setMembers] = useState([])
   const [quickVisits, setQuickVisits] = useState([])
   const [activeTab, setActiveTab] = useState('checkin') // checkin, quickvisit, members, register
+  const [toast, setToast] = useState(null)
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
+  }
+
+  const dismissToast = () => {
+    setToast(null)
+  }
 
   const load = useCallback(async () => {
     const [memberData, quickVisitData] = await Promise.all([
@@ -33,10 +43,13 @@ function App() {
     }).length
 
     const memberVisits = members.reduce((sum, m) => sum + (m.visits || []).filter(v => v.at?.startsWith(today)).length, 0)
-    const quickToday = quickVisits.filter(v => v.at?.startsWith(today)).length
+    // Count only paid quick visits (amount > 0)
+    const quickToday = quickVisits.filter(v => v.at?.startsWith(today) && (v.amount || 0) > 0).length
 
     return {
       activeCount,
+      memberVisitsToday: memberVisits,
+      quickVisitsToday: quickToday,
       totalVisitsToday: memberVisits + quickToday,
       total: members.length,
       inactive: members.length - activeCount
@@ -123,7 +136,7 @@ function App() {
         {activeTab === 'checkin' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <CheckinPanel members={members} quickVisits={quickVisits} onChange={load} />
+              <CheckinPanel members={members} quickVisits={quickVisits} onChange={load} onNavigateToMembers={() => setActiveTab('members')} onShowToast={showToast} />
             </div>
             <div>
               <IncomePanel members={members} quickVisits={quickVisits} />
@@ -134,7 +147,7 @@ function App() {
         {activeTab === 'quickvisit' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <QuickVisitPanel members={members} quickVisits={quickVisits} onChange={() => { load(); setActiveTab('checkin') }} />
+              <QuickVisitPanel members={members} quickVisits={quickVisits} onChange={() => { load(); setActiveTab('checkin') }} onShowToast={showToast} />
             </div>
             <div>
               <IncomePanel members={members} quickVisits={quickVisits} />
@@ -156,7 +169,7 @@ function App() {
         {activeTab === 'register' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <MemberForm onSave={() => { load(); setActiveTab('checkin'); }} />
+              <MemberForm onSave={() => { load(); setActiveTab('checkin'); }} onShowToast={showToast} />
             </div>
             <div>
               <IncomePanel members={members} quickVisits={quickVisits} />
@@ -164,6 +177,8 @@ function App() {
           </div>
         )}
       </main>
+
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={dismissToast} />}
     </div>
   )
 }

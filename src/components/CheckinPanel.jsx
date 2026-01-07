@@ -3,7 +3,7 @@ import { PLANS } from '../services/membersService'
 import membersService from '../services/membersService'
 import MemberStatusModal from './MemberStatusModal'
 
-export default function CheckinPanel({ members = [], quickVisits = [], onChange }) {
+export default function CheckinPanel({ members = [], quickVisits = [], onChange, onNavigateToMembers = () => {}, onShowToast }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [selectedMember, setSelectedMember] = useState(null)
@@ -35,7 +35,15 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
   const handleCloseModal = async () => {
     // Only register visit if NO payment was done (payment includes visit registration)
     if (selectedMember && !paymentDone && showModal) {
-      await membersService.registerVisit(selectedMember.id, { method: 'manual' })
+      const today = membersService.getTodayLocal()
+      const hasVisitToday = (selectedMember.visits || []).some(v => v.at && v.at.startsWith(today))
+      if (!hasVisitToday) {
+        await membersService.registerVisit(selectedMember.id, { method: 'manual' })
+      }
+      if (onShowToast) {
+        const fullName = `${selectedMember.firstName} ${selectedMember.paterno}`.trim()
+        onShowToast(`Entrada registrada: ${fullName}`, 'success')
+      }
     }
     setShowModal(false)
     setSelectedMember(null)
@@ -166,12 +174,14 @@ export default function CheckinPanel({ members = [], quickVisits = [], onChange 
         </div>
       )}
 
-      {showModal && selectedMember && (
+        {showModal && selectedMember && (
         <MemberStatusModal 
           member={selectedMember} 
           onClose={handleCloseModal} 
           onChange={onChange} 
           onPaymentDone={(done) => setPaymentDone(done)}
+          onNavigateToMembers={onNavigateToMembers}
+          onShowToast={onShowToast}
         />
       )}
     </>

@@ -7,7 +7,10 @@ export default function MemberList({ members = [], onChange }) {
   const list = useMemo(() => {
     const term = q.trim().toLowerCase()
     if (!term) return members
-    return members.filter(m => (m.name || '').toLowerCase().includes(term) || (m.email || '').toLowerCase().includes(term) || (m.phone || '').toLowerCase().includes(term))
+    return members.filter(m => {
+      const fullName = `${m.firstName || m.name || ''} ${m.paterno || ''} ${m.materno || ''}`.toLowerCase()
+      return fullName.includes(term) || (m.email || '').toLowerCase().includes(term) || (m.phone || '').toLowerCase().includes(term)
+    })
   }, [members, q])
 
   return (

@@ -1,11 +1,14 @@
 import React, { useMemo, useState } from 'react'
 import membersService from '../services/membersService'
+import DashboardAnalytics from './DashboardAnalytics'
+import ClockDisplay from './ClockDisplay'
 
 export default function IncomePanel({ members = [], quickVisits = [] }) {
   const [showDetails, setShowDetails] = useState(false)
   const [password, setPassword] = useState('')
   const [unlocked, setUnlocked] = useState(false)
   const [error, setError] = useState('')
+  const [showDashboard, setShowDashboard] = useState(false)
 
   const labels = {
     visita: 'Visita',
@@ -48,11 +51,11 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
           res.today += amount
           res.todayCount++
         }
-        if (p.at && p.at >= weekAgo) {
+        if (p.at && (p.at.slice(0,10) >= weekAgo)) {
           res.thisWeek += amount
           res.weekCount++
         }
-        if (p.at && p.at >= monthAgo) {
+        if (p.at && (p.at.slice(0,10) >= monthAgo)) {
           res.thisMonth += amount
           res.monthCount++
         }
@@ -71,11 +74,11 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
           res.today += amount
           res.todayCount++
         }
-        if (v.at && v.at >= weekAgo) {
+        if (v.at && (v.at.slice(0,10) >= weekAgo)) {
           res.thisWeek += amount
           res.weekCount++
         }
-        if (v.at && v.at >= monthAgo) {
+        if (v.at && (v.at.slice(0,10) >= monthAgo)) {
           res.thisMonth += amount
           res.monthCount++
         }
@@ -199,16 +202,21 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
   }
 
   return (
-    <div className="bg-gray-900 p-6 rounded-lg card-shadow border border-gray-800">
-      <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+    <div className="bg-gray-900 p-4 md:p-6 rounded-lg card-shadow border border-gray-800">
+      <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 flex items-center gap-2">
         <span>💰</span> Panel de Ingresos
       </h2>
       
+      {/* Reloj de sincronización en tiempo real */}
+      <div className="mb-4 md:mb-6">
+        <ClockDisplay />
+      </div>
+      
       {/* Ingresos de hoy - siempre visible */}
-      <div className="bg-gradient-to-br from-green-900 to-green-800 p-4 rounded-lg mb-4">
-        <div className="text-sm text-green-200 uppercase font-semibold">Ingresos Hoy</div>
-        <div className="text-4xl font-bold text-white mt-1">${summary.today.toLocaleString()}</div>
-        <div className="text-xs text-green-300 mt-1">{summary.todayCount} pago{summary.todayCount !== 1 ? 's' : ''} registrado{summary.todayCount !== 1 ? 's' : ''}</div>
+      <div className="bg-gradient-to-br from-green-900 to-green-800 p-3 md:p-4 rounded-lg mb-3 md:mb-4">
+        <div className="text-xs md:text-sm text-green-200 uppercase font-semibold">Ingresos Hoy</div>
+        <div className="text-3xl md:text-4xl font-bold text-white mt-1">${summary.today.toLocaleString()}</div>
+        <div className="text-[10px] md:text-xs text-green-300 mt-1">{summary.todayCount} pago{summary.todayCount !== 1 ? 's' : ''} registrado{summary.todayCount !== 1 ? 's' : ''}</div>
       </div>
 
       {/* Botón para ver análisis completo */}
@@ -216,7 +224,7 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
         <div>
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg transition-colors flex items-center justify-between"
+            className="w-full bg-gray-800 hover:bg-gray-700 p-2 md:p-3 rounded-lg transition-colors flex items-center justify-between text-sm md:text-base"
           >
             <span className="font-semibold">🔒 Ver análisis completo</span>
             <span>{showDetails ? '▲' : '▼'}</span>
@@ -227,15 +235,15 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
               <input
                 type="password"
                 placeholder="Ingresa la clave"
-                className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-potros-red focus:outline-none"
+                className="w-full p-2 md:p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-potros-red focus:outline-none text-sm md:text-base"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 autoFocus
               />
-              {error && <div className="text-red-400 text-sm">{error}</div>}
+              {error && <div className="text-red-400 text-xs md:text-sm">{error}</div>}
               <button
                 type="submit"
-                className="w-full bg-potros-red hover:bg-red-700 p-3 rounded-lg font-semibold transition-colors"
+                className="w-full bg-potros-red hover:bg-red-700 p-2 md:p-3 rounded-lg font-semibold transition-colors text-sm md:text-base"
               >
                 Desbloquear
               </button>
@@ -268,6 +276,15 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
           >
             <span>📊</span>
             <span>Exportar Base Completa a Excel</span>
+          </button>
+
+          {/* Botón de Dashboard Avanzado */}
+          <button
+            onClick={() => setShowDashboard(true)}
+            className="w-full bg-purple-600 hover:bg-purple-700 p-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <span>📈</span>
+            <span>Análisis Avanzado</span>
           </button>
 
           {/* Movimientos de hoy */}
@@ -361,6 +378,15 @@ export default function IncomePanel({ members = [], quickVisits = [] }) {
             <div className="text-xs text-purple-300 mt-1">Basado en promedio semanal</div>
           </div>
         </div>
+      )}
+
+      {/* Dashboard Analytics Modal */}
+      {showDashboard && (
+        <DashboardAnalytics
+          members={members}
+          quickVisits={quickVisits}
+          onClose={() => setShowDashboard(false)}
+        />
       )}
     </div>
   )
