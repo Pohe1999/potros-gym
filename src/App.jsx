@@ -1,32 +1,35 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import './App.css'
-import Header from './components/Header'
+import Sidebar from './components/Sidebar'
+import CheckinPanel from './components/CheckinPanel'
 import MemberList from './components/MemberList'
 import MemberForm from './components/MemberForm'
-import CheckinPanel from './components/CheckinPanel'
 import QuickVisitPanel from './components/QuickVisitPanel'
 import IncomePanel from './components/IncomePanel'
 import Toast from './components/Toast'
+import CustomCursor from './components/CustomCursor'
 import membersService from './services/membersService'
 
+const pageVariants = {
+  initial: { opacity: 0, y: 18 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.28, ease: 'easeOut' } },
+  exit:    { opacity: 0, y: -12, transition: { duration: 0.18 } },
+}
+
 function App() {
-  const [members, setMembers] = useState([])
+  const [members, setMembers]         = useState([])
   const [quickVisits, setQuickVisits] = useState([])
-  const [activeTab, setActiveTab] = useState('checkin') // checkin, quickvisit, members, register
-  const [toast, setToast] = useState(null)
+  const [activeTab, setActiveTab]     = useState('checkin')
+  const [toast, setToast]             = useState(null)
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type })
-  }
-
-  const dismissToast = () => {
-    setToast(null)
-  }
+  const showToast = (message, type = 'success') => setToast({ message, type })
+  const dismissToast = () => setToast(null)
 
   const load = useCallback(async () => {
     const [memberData, quickVisitData] = await Promise.all([
       membersService.getMembers(),
-      membersService.getQuickVisits()
+      membersService.getQuickVisits(),
     ])
     setMembers(memberData)
     setQuickVisits(quickVisitData)
@@ -34,151 +37,137 @@ function App() {
 
   const stats = useMemo(() => {
     const today = membersService.getTodayLocal()
-    const now = new Date()
+    const now   = new Date()
 
     const activeCount = members.filter(m => {
       if (!m.expiry) return false
-      const exp = new Date(m.expiry + 'T23:59:59')
-      return now <= exp
+      return now <= new Date(m.expiry + 'T23:59:59')
     }).length
 
-    const memberVisits = members.reduce((sum, m) => sum + (m.visits || []).filter(v => v.at?.startsWith(today)).length, 0)
-    // Count only paid quick visits (amount > 0)
-    const quickToday = quickVisits.filter(v => v.at?.startsWith(today) && (v.amount || 0) > 0).length
+    // Entradas de socios hoy — excluir auto-creadas al registrar nuevo socio
+    const memberVisits = members.reduce(
+      (sum, m) => sum + (m.visits || []).filter(v =>
+        v.at?.startsWith(today) && v.method !== 'new-member'
+      ).length, 0
+    )
+    // Visitas rápidas hoy — todas (entrada = presencia, no depende de pago)
+    const quickToday = quickVisits.filter(v => v.at?.startsWith(today)).length
 
     return {
       activeCount,
       memberVisitsToday: memberVisits,
-      quickVisitsToday: quickToday,
-      totalVisitsToday: memberVisits + quickToday,
-      total: members.length,
-      inactive: members.length - activeCount
+      quickVisitsToday:  quickToday,
+      totalVisitsToday:  memberVisits + quickToday,
+      total:   members.length,
+      inactive: members.length - activeCount,
     }
   }, [members, quickVisits])
 
-  useEffect(() => {
-    load().catch(err => console.error(err))
-  }, [load])
+  useEffect(() => { load().catch(console.error) }, [load])
+
+  const pages = {
+    checkin: (
+      <CheckinPanel
+        members={members} quickVisits={quickVisits}
+        onChange={load} onNavigate={setActiveTab}
+        onShowToast={showToast}
+      />
+    ),
+    members: (
+      <MemberList members={members} onChange={load} onShowToast={showToast} />
+    ),
+    quickvisit: (
+      <QuickVisitPanel
+        members={members} quickVisits={quickVisits}
+        onChange={() => { load(); setActiveTab('checkin') }} onShowToast={showToast}
+      />
+    ),
+    register: (
+      <MemberForm onSave={() => { load(); setActiveTab('checkin') }} onShowToast={showToast} />
+    ),
+    income: (
+      <IncomePanel members={members} quickVisits={quickVisits} />
+    ),
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-potros-black to-gray-900">
-      <Header members={members} />
-      
-      {/* Tabs de navegación */}
-      <div className="bg-gray-900 border-b border-gray-800">
-        <div className="container-max flex flex-col gap-3 py-2">
-          <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-2">
-            <button 
-              onClick={() => setActiveTab('checkin')} 
-              className={`px-4 py-3 md:px-6 md:py-3 rounded-lg font-semibold text-sm md:text-base transition-all text-center ${
-                activeTab === 'checkin' 
-                  ? 'bg-potros-red text-white' 
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              👋 Registro de Entrada
-            </button>
-            <button 
-              onClick={() => setActiveTab('members')} 
-              className={`px-4 py-3 md:px-6 md:py-3 rounded-lg font-semibold text-sm md:text-base transition-all text-center ${
-                activeTab === 'members' 
-                  ? 'bg-potros-red text-white' 
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              📊 Lista de Socios
-            </button>
-            <button 
-              onClick={() => setActiveTab('quickvisit')} 
-              className={`px-4 py-3 md:px-6 md:py-3 rounded-lg font-semibold text-sm md:text-base transition-all text-center ${
-                activeTab === 'quickvisit' 
-                  ? 'bg-potros-red text-white' 
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              📝 Registrar Visita
-            </button>
-            <button 
-              onClick={() => setActiveTab('register')} 
-              className={`px-4 py-3 md:px-6 md:py-3 rounded-lg font-semibold text-sm md:text-base transition-all text-center ${
-                activeTab === 'register' 
-                  ? 'bg-potros-red text-white' 
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              ➕ Nuevo Socio
-            </button>
-          </div>
+    <div className="flex h-screen overflow-hidden bg-potros-black font-sans">
+      <CustomCursor />
+      {/* Sidebar desktop */}
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} stats={stats} />
 
-          {/* Fila de números para móvil debajo de los botones */}
-          <div className="grid grid-cols-4 gap-2 md:hidden text-center text-[11px] text-gray-300">
-            <div className="bg-gray-800 rounded-lg py-1">
-              <div className="text-base font-bold text-potros-red">{stats.total}</div>
-              <div>Total</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg py-1">
-              <div className="text-base font-bold text-green-400">{stats.activeCount}</div>
-              <div>Activos</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg py-1">
-              <div className="text-base font-bold text-yellow-400">{stats.inactive}</div>
-              <div>Inactivos</div>
-            </div>
-            <div className="bg-gray-800 rounded-lg py-1">
-              <div className="text-base font-bold text-blue-400">{stats.totalVisitsToday}</div>
-              <div>Entradas</div>
+      {/* Área principal */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        {/* TopBar móvil */}
+        <header className="md:hidden flex items-center justify-between px-4 py-3 border-b border-white/5 bg-potros-surface/80 backdrop-blur-xl flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="POTROS GYM" className="h-9 w-9 object-contain" />
+            <div>
+              <span className="font-bold text-base text-white">Potros GYM</span>
+              <span className="ml-2 text-[10px] text-white/40 font-mono bg-white/5 px-1.5 py-0.5 rounded">v3.0.0</span>
             </div>
           </div>
-        </div>
+          <div className="flex items-center gap-2 text-xs text-white/50">
+            <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-semibold">
+              {stats.activeCount} activos
+            </span>
+          </div>
+        </header>
+
+        {/* Contenido principal — scrollable */}
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={activeTab}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto w-full"
+            >
+              {pages[activeTab]}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+
+        {/* Bottom Nav móvil */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-potros-surface/95 backdrop-blur-xl border-t border-white/[0.07]">
+          <div className="flex items-stretch">
+            {[
+              { id: 'checkin',    emoji: '👋', label: 'Entrada' },
+              { id: 'members',    emoji: '👥', label: 'Socios' },
+              { id: 'quickvisit', emoji: '⚡', label: 'Visita' },
+              { id: 'register',   emoji: '➕', label: 'Nuevo' },
+              { id: 'income',     emoji: '💰', label: 'Ingresos' },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition-all ${
+                  activeTab === tab.id
+                    ? 'text-potros-red'
+                    : 'text-white/40 hover:text-white/70'
+                }`}
+              >
+                <span className="text-lg leading-none">{tab.emoji}</span>
+                <span className={`text-[10px] font-semibold ${activeTab === tab.id ? 'text-potros-red' : ''}`}>
+                  {tab.label}
+                </span>
+                {activeTab === tab.id && (
+                  <motion.div layoutId="bottomIndicator" className="absolute bottom-0 h-0.5 w-8 bg-potros-red rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
+        </nav>
       </div>
 
-      <main className="container-max py-6">
-        {activeTab === 'checkin' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <CheckinPanel members={members} quickVisits={quickVisits} onChange={load} onNavigateToMembers={() => setActiveTab('members')} onShowToast={showToast} />
-            </div>
-            <div>
-              <IncomePanel members={members} quickVisits={quickVisits} />
-            </div>
-          </div>
+      <AnimatePresence>
+        {toast && (
+          <Toast key={toast.message + toast.type} message={toast.message} type={toast.type} onDismiss={dismissToast} />
         )}
-
-        {activeTab === 'quickvisit' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <QuickVisitPanel members={members} quickVisits={quickVisits} onChange={() => { load(); setActiveTab('checkin') }} onShowToast={showToast} />
-            </div>
-            <div>
-              <IncomePanel members={members} quickVisits={quickVisits} />
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'members' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <MemberList members={members} onChange={load} />
-            </div>
-            <div>
-              <IncomePanel members={members} quickVisits={quickVisits} />
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'register' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <MemberForm onSave={() => { load(); setActiveTab('checkin'); }} onShowToast={showToast} />
-            </div>
-            <div>
-              <IncomePanel members={members} quickVisits={quickVisits} />
-            </div>
-          </div>
-        )}
-      </main>
-
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={dismissToast} />}
+      </AnimatePresence>
     </div>
   )
 }

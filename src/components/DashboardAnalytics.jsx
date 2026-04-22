@@ -127,7 +127,7 @@ export default function DashboardAnalytics({ members = [], quickVisits = [], onC
           {/* Filtros */}
           <div className="bg-gray-900 p-3 md:p-6 rounded-lg border border-gray-700 mb-4 md:mb-6 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <div>
-              <label className="block text-[10px] md:text-xs text-gray-400 uppercase mb-1 md:mb-2">Desde</label>
+              <label className="block text-[10px] md:text-xs text-gray-200 uppercase mb-1 md:mb-2">Desde</label>
               <input
                 type="date"
                 value={startDate}
@@ -136,7 +136,7 @@ export default function DashboardAnalytics({ members = [], quickVisits = [], onC
               />
             </div>
             <div>
-              <label className="block text-[10px] md:text-xs text-gray-400 uppercase mb-1 md:mb-2">Hasta</label>
+              <label className="block text-[10px] md:text-xs text-gray-200 uppercase mb-1 md:mb-2">Hasta</label>
               <input
                 type="date"
                 value={endDate}
@@ -145,7 +145,7 @@ export default function DashboardAnalytics({ members = [], quickVisits = [], onC
               />
             </div>
             <div>
-              <label className="block text-[10px] md:text-xs text-gray-400 uppercase mb-1 md:mb-2">Tipo</label>
+              <label className="block text-[10px] md:text-xs text-gray-200 uppercase mb-1 md:mb-2">Tipo</label>
               <select
                 value={filterType}
                 onChange={e => setFilterType(e.target.value)}
@@ -157,7 +157,7 @@ export default function DashboardAnalytics({ members = [], quickVisits = [], onC
               </select>
             </div>
             <div>
-              <label className="block text-[10px] md:text-xs text-gray-400 uppercase mb-1 md:mb-2">Plan</label>
+              <label className="block text-[10px] md:text-xs text-gray-200 uppercase mb-1 md:mb-2">Plan</label>
               <select
                 value={selectedPlan}
                 onChange={e => setSelectedPlan(e.target.value)}
@@ -211,7 +211,7 @@ export default function DashboardAnalytics({ members = [], quickVisits = [], onC
                     return (
                       <div key={type}>
                         <div className="flex justify-between mb-1">
-                          <span className="text-sm text-gray-300">{labels[type] || type}</span>
+                          <span className="text-sm text-white/80">{labels[type] || type}</span>
                           <span className="font-semibold text-potros-red">${amount.toLocaleString()}</span>
                         </div>
                         <div className="w-full bg-gray-700 rounded-full h-2">
@@ -235,7 +235,7 @@ export default function DashboardAnalytics({ members = [], quickVisits = [], onC
                   <div key={plan} className="flex items-center justify-between p-3 bg-gray-800 rounded">
                     <div className="flex items-center gap-3">
                       <span className="text-xl font-bold text-potros-red">#{idx + 1}</span>
-                      <span className="text-gray-300">{labels[plan] || plan}</span>
+                      <span className="text-white/80">{labels[plan] || plan}</span>
                     </div>
                     <span className="font-semibold">${amount.toLocaleString()}</span>
                   </div>
@@ -254,7 +254,7 @@ export default function DashboardAnalytics({ members = [], quickVisits = [], onC
                   <div key={member} className="flex items-center justify-between p-3 bg-gray-800 rounded">
                     <div className="flex items-center gap-3">
                       <span className="text-xl font-bold text-blue-400">#{idx + 1}</span>
-                      <span className="text-gray-300 truncate">{member}</span>
+                      <span className="text-white/80 truncate">{member}</span>
                     </div>
                     <span className="font-semibold">${amount.toLocaleString()}</span>
                   </div>
@@ -270,7 +270,7 @@ export default function DashboardAnalytics({ members = [], quickVisits = [], onC
                   .sort((a, b) => b[1] - a[1])
                   .map(([plan, amount]) => (
                     <div key={plan} className="flex justify-between items-center p-3 bg-gray-800 rounded">
-                      <span className="text-gray-300">{labels[plan] || plan}</span>
+                      <span className="text-white/80">{labels[plan] || plan}</span>
                       <div className="text-right">
                         <div className="font-semibold text-green-400">${amount.toLocaleString()}</div>
                         <div className="text-xs text-gray-500">
@@ -292,21 +292,21 @@ export default function DashboardAnalytics({ members = [], quickVisits = [], onC
               <table className="w-full text-xs md:text-sm">
                 <thead className="bg-gray-800 sticky top-0">
                   <tr>
-                    <th className="px-2 md:px-4 py-2 text-left text-gray-300 text-[10px] md:text-sm">Fecha/Hora</th>
-                    <th className="px-2 md:px-4 py-2 text-left text-gray-300 text-[10px] md:text-sm">Miembro</th>
-                    <th className="px-2 md:px-4 py-2 text-left text-gray-300 text-[10px] md:text-sm">Plan/Tipo</th>
-                    <th className="px-2 md:px-4 py-2 text-right text-gray-300 text-[10px] md:text-sm">Monto</th>
+                    <th className="px-2 md:px-4 py-2 text-left text-white/80 text-[10px] md:text-sm">Fecha/Hora</th>
+                    <th className="px-2 md:px-4 py-2 text-left text-white/80 text-[10px] md:text-sm">Miembro</th>
+                    <th className="px-2 md:px-4 py-2 text-left text-white/80 text-[10px] md:text-sm">Plan/Tipo</th>
+                    <th className="px-2 md:px-4 py-2 text-right text-white/80 text-[10px] md:text-sm">Monto</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredPayments.map((p, idx) => (
                     <tr key={p.id || idx} className="border-t border-gray-700 hover:bg-gray-800">
-                      <td className="px-2 md:px-4 py-2 md:py-3 text-gray-300 text-[10px] md:text-xs whitespace-nowrap">
+                      <td className="px-2 md:px-4 py-2 md:py-3 text-white/80 text-[10px] md:text-xs whitespace-nowrap">
                         {new Date(p.at).toLocaleDateString('es-MX', { month: 'numeric', day: 'numeric' })} {' '}
                         {new Date(p.at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                       </td>
-                      <td className="px-2 md:px-4 py-2 md:py-3 text-gray-300 truncate max-w-[100px] md:max-w-xs text-[10px] md:text-sm">{p.memberName}</td>
-                      <td className="px-2 md:px-4 py-2 md:py-3 text-gray-300 text-[10px] md:text-sm">{labels[p.type] || p.type}</td>
+                      <td className="px-2 md:px-4 py-2 md:py-3 text-white/80 truncate max-w-[100px] md:max-w-xs text-[10px] md:text-sm">{p.memberName}</td>
+                      <td className="px-2 md:px-4 py-2 md:py-3 text-white/80 text-[10px] md:text-sm">{labels[p.type] || p.type}</td>
                       <td className="px-2 md:px-4 py-2 md:py-3 text-right font-semibold text-green-400 text-[10px] md:text-sm whitespace-nowrap">
                         ${p.amount.toLocaleString()}
                       </td>

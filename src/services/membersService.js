@@ -1,14 +1,15 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 
+// BUG FIX v3: planes mensuales/anuales usan meses calendario
 export const PLANS = {
-  visita: { days: 0, price: 50, label: 'Visita' },
-  semana: { days: 7, price: 150, label: '1 Semana' },
-  '15dias': { days: 15, price: 250, label: '15 Días' },
-  mensualPromo: { days: 30, price: 400, label: 'Mensual Promo Dic' },
-  estudiante: { days: 30, price: 350, label: 'Promo Estudiantes' },
-  mensual: { days: 30, price: 500, label: 'Mensual' },
-  parejas: { days: 30, price: 400, label: 'Parejas o Más' },
-  anual: { days: 365, price: 5000, label: 'Anual' }
+  visita:       { days: 0,   months: 0,  price: 50,   label: 'Visita' },
+  semana:       { days: 7,   months: 0,  price: 150,  label: '1 Semana' },
+  '15dias':     { days: 15,  months: 0,  price: 250,  label: '15 Días' },
+  mensualPromo: { days: 30,  months: 1,  price: 400,  label: 'Mensual Promo' },
+  estudiante:   { days: 30,  months: 1,  price: 350,  label: 'Promo Estudiantes' },
+  mensual:      { days: 30,  months: 1,  price: 500,  label: 'Mensual' },
+  parejas:      { days: 30,  months: 1,  price: 400,  label: 'Parejas o Más' },
+  anual:        { days: 365, months: 12, price: 5000, label: 'Anual' }
 }
 
 // Obtiene la fecha local en formato YYYY-MM-DD en la zona America/Mexico_City
@@ -18,25 +19,30 @@ function getTodayLocal() {
 }
 
 function addDays(iso, days) {
-  // iso = 'YYYY-MM-DD'
   const [y, m, d] = (iso || '').split('-').map(Number)
   const baseUtc = Date.UTC(y, (m || 1) - 1, d || 1)
   const added = new Date(baseUtc + Number(days || 0) * 24 * 60 * 60 * 1000)
-  // Formatear en zona de México a YYYY-MM-DD
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(added)
+}
+
+// BUG FIX v3: suma meses calendario (ene 2 + 1 mes = feb 2, no feb 1)
+function addMonths(iso, months) {
+  const [y, m, d] = (iso || '').split('-').map(Number)
+  let newMonth = (m || 1) + (months || 0)
+  let newYear = y
+  while (newMonth > 12) { newMonth -= 12; newYear++ }
+  while (newMonth < 1)  { newMonth += 12; newYear-- }
+  const lastDay = new Date(newYear, newMonth, 0).getDate()
+  const newDay = Math.min(d || 1, lastDay)
+  return `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`
 }
 
 function computeExpiry(joinDateISO, planType) {
   const p = PLANS[planType]
   if (!p) return null
-  if (p.days === 0) return joinDateISO
-  
-  // Special case: Mensual Promo Dic expires on Feb 1, 2026
-  if (planType === 'mensualPromo') {
-    return '2026-02-01'
-  }
-  
-  return addDays(joinDateISO, p.days)
+  if (p.months === 0 && p.days === 0) return joinDateISO   // visita
+  if (p.months > 0) return addMonths(joinDateISO, p.months) // mensual/anual
+  return addDays(joinDateISO, p.days)                        // semana/15dias
 }
 
 function formatSpanishDate(isoDate) {
@@ -74,6 +80,7 @@ const membersService = {
   formatSpanishDate,
   getTodayLocal,
   addDays,
+  addMonths,
   getLocalDateAgo,
   getPlanInfo(planType) {
     return PLANS[planType] || null

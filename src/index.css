@@ -1,37 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  font-family: Verdana, sans-serif;
-}
-
-body {
-  font-family: Verdana, sans-serif;
-}
-
 :root {
-  --potros-black: #0b0b0b;
-  --potros-white: #ffffff;
-  --potros-red: #d62828;
+  --potros-black:   #050709;
+  --potros-surface: #0a0d13;
+  --potros-card:    #0e1219;
+  --potros-red:     #d62828;
+  --potros-red-br:  #e53935;
+  --glass:          rgba(255,255,255,0.03);
+  --glass-border:   rgba(255,255,255,0.08);
+  --glass-hover:    rgba(255,255,255,0.055);
 }
+
+* { box-sizing: border-box; }
 
 html, body, #root {
   height: 100%;
+  overflow: hidden;
 }
 
 body {
-  @apply bg-potros-black text-white font-sans antialiased;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--potros-black);
+  /* Gradientes vivos en las esquinas para dar "vida" al fondo negro */
+  background-image:
+    radial-gradient(ellipse 65% 55% at -5% -5%,  rgba(214,40,40,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 45% at 105% 105%, rgba(214,40,40,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 35% 25% at 50% -10%,  rgba(214,40,40,0.05) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: #f0f2f5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-.container-max {
-  @apply max-w-6xl mx-auto px-6 py-8;
+/* ── Scrollbar ── */
+::-webkit-scrollbar       { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(214,40,40,0.35); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(214,40,40,0.6); }
+
+/* ── Glass utilities ── */
+@layer utilities {
+  .glass {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* Glass con tinte rojo — para secciones activas/ hero */
+  .glass-red {
+    background: rgba(214,40,40,0.06);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(214,40,40,0.2);
+  }
+
+  /* Bordes glowing */
+  .border-glow-red   { border-color: rgba(214,40,40,0.5) !important; box-shadow: 0 0 16px rgba(214,40,40,0.3); }
+  .border-glow-green { border-color: rgba(34,197,94,0.5)  !important; box-shadow: 0 0 12px rgba(34,197,94,0.2); }
+
+  /* Glow shadows */
+  .glow-red   { box-shadow: 0 0 32px rgba(214,40,40,0.65), 0 0 64px rgba(214,40,40,0.2); }
+  .glow-green { box-shadow: 0 0 24px rgba(34,197,94,0.55); }
+  .glow-amber { box-shadow: 0 0 24px rgba(245,158,11,0.5); }
+  .glow-sky   { box-shadow: 0 0 24px rgba(56,189,248,0.5); }
+
+  /* Borde top decorativo rojo */
+  .border-top-red::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(214,40,40,0.8), transparent);
+    pointer-events: none;
+  }
 }
 
-.card-shadow {
-  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+/* ── Autofill inputs ── */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 40px #0a0d13 inset !important;
+  -webkit-text-fill-color: #f0f2f5 !important;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5) sepia(1) hue-rotate(320deg);
+  cursor: pointer;
+}
+select option { background: #0e1219; color: #f0f2f5; }
+
+/* ── Outline focus ── */
+:focus-visible {
+  outline: 2px solid rgba(214,40,40,0.7);
+  outline-offset: 2px;
 }
 
-.animate-slideDown {
-  animation: slideDown 0.4s ease-out;
+/* ── Animación de shimmer en texto ── */
+.text-shimmer {
+  background: linear-gradient(90deg, #fff 0%, #d62828 40%, #fff 80%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
 }
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ── Número pulsante para stats importantes ── */
+@keyframes numberPulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.04); }
+}
+.number-pulse { animation: numberPulse 2s ease-in-out infinite; }

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
-import { FiClock } from 'react-icons/fi'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Clock3 } from 'lucide-react'
 
-export default function ClockDisplay() {
+export default function ClockDisplay({ compact = false }) {
   const [time, setTime] = useState(new Date())
 
   useEffect(() => {
@@ -11,140 +11,108 @@ export default function ClockDisplay() {
     return () => clearInterval(interval)
   }, [])
 
-  // Obtener hora en zona America/Mexico_City
-  const formatter = new Intl.DateTimeFormat('es-MX', {
+  const formatter = useMemo(() => new Intl.DateTimeFormat('es-MX', {
     timeZone: 'America/Mexico_City',
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
     hour12: false
-  })
-  
+  }), [])
+
   const timeStr = formatter.format(time)
-  
-  // Obtener fecha en zona America/Mexico_City
-  const dateFormatter = new Intl.DateTimeFormat('es-MX', {
+
+  const dateFormatter = useMemo(() => new Intl.DateTimeFormat('es-MX', {
     timeZone: 'America/Mexico_City',
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  })
-  
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }), [])
+
   const dateStr = dateFormatter.format(time)
 
-  // Calcular ángulos para el reloj analógico con smoothness
   const hours = time.getHours() % 12
   const minutes = time.getMinutes()
   const seconds = time.getSeconds()
-  const milliseconds = time.getMilliseconds()
-  
-  // Suavizar el movimiento del segundero
-  const smoothSeconds = seconds + milliseconds / 1000
+  const smoothSeconds = seconds + time.getMilliseconds() / 1000
   const secondDegrees = (smoothSeconds / 60) * 360
   const minuteDegrees = (minutes / 60) * 360 + (smoothSeconds / 60) * 6
   const hourDegrees = (hours / 12) * 360 + (minutes / 60) * 30
 
   return (
-    <div className="flex flex-col items-center gap-3 md:gap-4 p-4 md:p-6 bg-gradient-to-br from-gray-950 via-gray-900 to-black rounded-xl md:rounded-2xl border border-gray-800 shadow-2xl">
-      {/* Reloj Cartier Santos Style */}
-      <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-lg md:rounded-xl bg-gradient-to-br from-gray-900 to-black border-4 md:border-8 border-gray-700 shadow-2xl" 
-           style={{
-             boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.9)'
-           }}>
-        
-        {/* Decoración cuadrícula Cartier */}
-        <div className="absolute inset-0 rounded-lg opacity-10">
-          <div className="absolute top-1 left-1 w-2 h-2 border border-gray-500"></div>
-          <div className="absolute top-1 right-1 w-2 h-2 border border-gray-500"></div>
-          <div className="absolute bottom-1 left-1 w-2 h-2 border border-gray-500"></div>
-          <div className="absolute bottom-1 right-1 w-2 h-2 border border-gray-500"></div>
-        </div>
-
-        {/* Centro del reloj */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-3 h-3 bg-gradient-to-br from-gray-300 to-gray-600 rounded-full z-20 shadow-lg"></div>
-        </div>
-
-        {/* Marcas horarias - estilo Cartier (simples y elegantes) */}
-        {[...Array(12)].map((_, i) => {
-          const angle = (i * 30) * (Math.PI / 180)
-          const outerX = Math.sin(angle) * 50
-          const outerY = -Math.cos(angle) * 50
-          
-          return (
-            <div key={i} className="absolute w-full h-full"
-              style={{
-                transform: `rotate(${i * 30}deg)`
-              }}>
-              {/* Marcas principales (cada 3 horas) */}
-              {i % 3 === 0 ? (
-                <div className="absolute top-2 left-1/2 w-1 h-2.5 bg-gradient-to-b from-gray-200 to-gray-400 rounded-full transform -translate-x-1/2 shadow-sm"></div>
-              ) : (
-                <div className="absolute top-3 left-1/2 w-0.5 h-1.5 bg-gray-500 rounded-full transform -translate-x-1/2"></div>
-              )}
-            </div>
-          )
-        })}
-
-        {/* Manecilla de horas - corta y gruesa */}
+    <div
+      className={`glass border border-white/[0.08] flex items-center ${compact ? 'rounded-xl p-2.5 gap-2.5' : 'rounded-2xl p-4 gap-4'}`}
+      style={{
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.015) 100%)',
+        boxShadow: compact ? '0 6px 20px rgba(0,0,0,0.3)' : '0 8px 28px rgba(0,0,0,0.32)',
+      }}
+    >
+      <div className={`relative rounded-full border border-white/10 bg-black/30 ${compact ? 'w-14 h-14' : 'w-24 h-24'}`}>
         <div
-          className="absolute bottom-1/2 left-1/2 origin-bottom rounded-full shadow-lg transition-all"
+          className={`absolute rounded-full ${compact ? 'inset-1.5' : 'inset-2'}`}
+          style={{
+            background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), rgba(0,0,0,0.1))',
+            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.45)',
+          }}
+        />
+
+        {[...Array(12)].map((_, i) => (
+          <div key={i} className="absolute w-full h-full" style={{ transform: `rotate(${i * 30}deg)` }}>
+            <div className={`absolute top-1 left-1/2 -translate-x-1/2 rounded-full ${i % 3 === 0 ? 'h-2 w-0.5 bg-white/45' : 'h-1.5 w-px bg-white/20'}`} />
+          </div>
+        ))}
+
+        <div
+          className="absolute bottom-1/2 left-1/2 origin-bottom rounded-full"
           style={{
             transform: `translateX(-50%) rotateZ(${hourDegrees}deg)`,
-            width: '5px',
-            height: '24px',
-            background: 'linear-gradient(to top, #d1d5db, #f3f4f6)',
-            boxShadow: '0 0 4px rgba(0,0,0,0.5)'
+            width: compact ? '2.5px' : '4px',
+            height: compact ? '14px' : '24px',
+            background: 'linear-gradient(to top, rgba(255,255,255,0.8), rgba(255,255,255,0.35))',
           }}
-        ></div>
+        />
 
-        {/* Manecilla de minutos - mediana */}
         <div
-          className="absolute bottom-1/2 left-1/2 origin-bottom rounded-full shadow-lg transition-all"
+          className="absolute bottom-1/2 left-1/2 origin-bottom rounded-full"
           style={{
             transform: `translateX(-50%) rotateZ(${minuteDegrees}deg)`,
-            width: '3.5px',
-            height: '32px',
-            background: 'linear-gradient(to top, #e5e7eb, #f9fafb)',
-            boxShadow: '0 0 3px rgba(0,0,0,0.4)'
+            width: compact ? '2px' : '3px',
+            height: compact ? '18px' : '31px',
+            background: 'linear-gradient(to top, rgba(255,255,255,0.9), rgba(255,255,255,0.45))',
           }}
-        ></div>
+        />
 
-        {/* Segundero - delgado y rojo elegante */}
         <div
           className="absolute bottom-1/2 left-1/2 origin-bottom rounded-full"
           style={{
             transform: `translateX(-50%) rotateZ(${secondDegrees}deg)`,
-            width: '1.5px',
-            height: '36px',
-            background: 'linear-gradient(to top, #dc2626, #ef4444)',
-            boxShadow: '0 0 2px rgba(220, 38, 38, 0.6)'
+            width: compact ? '1px' : '1.5px',
+            height: compact ? '20px' : '35px',
+            background: 'linear-gradient(to top, #ef4444, #f87171)',
+            boxShadow: '0 0 6px rgba(239,68,68,0.55)',
           }}
-        ></div>
+        />
 
-        {/* Pequeño círculo en base del segundero */}
-        <div className="absolute bottom-1/2 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-1.5 h-1.5 bg-red-500 rounded-full z-10 shadow-md"></div>
-      </div>
-
-      {/* Hora Digital */}
-      <div className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <FiClock className="text-gray-400 text-base md:text-lg" />
-          <span className="text-xl md:text-2xl font-mono font-bold text-gray-200 tracking-wider">
-            {timeStr}
-          </span>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className={`${compact ? 'w-2 h-2' : 'w-2.5 h-2.5'} rounded-full bg-white/85 border border-white/30`} />
         </div>
-        <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest">
-          {dateStr} • México
-        </p>
       </div>
 
-      {/* Indicador de sincronización */}
-      <div className="w-full pt-2 md:pt-3 border-t border-gray-700">
-        <p className="text-[10px] md:text-xs text-gray-500 text-center flex items-center justify-center gap-1">
-          <span className="inline-block w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full animate-pulse"></span>
-          Sincronizado
-        </p>
+      <div className="min-w-0 flex-1">
+        <div className={`flex items-center text-white/45 uppercase tracking-widest ${compact ? 'gap-1.5 text-[10px] mb-1' : 'gap-2 text-xs mb-1.5'}`}>
+          <Clock3 size={compact ? 11 : 13} className="text-potros-red/70" />
+          Hora local
+        </div>
+        <div className={`${compact ? 'text-lg' : 'text-3xl'} leading-none font-black text-white tracking-tight font-mono`}>{timeStr}</div>
+        {!compact && (
+          <p className="text-xs text-white/45 mt-2 truncate">
+            {dateStr.charAt(0).toUpperCase() + dateStr.slice(1)}
+          </p>
+        )}
+        <div className={`${compact ? 'mt-1.5 text-[10px] px-1.5 py-0.5' : 'mt-3 text-[11px] px-2 py-0.5'} inline-flex items-center gap-1.5 text-emerald-400/80 border border-emerald-400/20 bg-emerald-400/10 rounded-full`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          Sincronizado CDMX
+        </div>
       </div>
     </div>
   )

@@ -18,15 +18,17 @@ mongoose.connect(MONGO_URI).then(() => {
   process.exit(1)
 })
 
+// BUG FIX v3: planes mensuales/anuales usan meses calendario, no días planos
+// Así "2 de enero + mensual" vence el "2 de febrero" (no el 1)
 const PLANS = {
-  visita: { days: 0, price: 50, label: 'Visita' },
-  semana: { days: 7, price: 150, label: '1 Semana' },
-  '15dias': { days: 15, price: 250, label: '15 Días' },
-  mensualPromo: { days: 30, price: 400, label: 'Mensual Promo Dic' },
-  estudiante: { days: 30, price: 350, label: 'Promo Estudiantes' },
-  mensual: { days: 30, price: 500, label: 'Mensual' },
-  parejas: { days: 30, price: 400, label: 'Parejas o Más' },
-  anual: { days: 365, price: 5000, label: 'Anual' }
+  visita:       { days: 0,   months: 0,  price: 50,   label: 'Visita' },
+  semana:       { days: 7,   months: 0,  price: 150,  label: '1 Semana' },
+  '15dias':     { days: 15,  months: 0,  price: 250,  label: '15 Días' },
+  mensualPromo: { days: 30,  months: 1,  price: 400,  label: 'Mensual Promo' },
+  estudiante:   { days: 30,  months: 1,  price: 350,  label: 'Promo Estudiantes' },
+  mensual:      { days: 30,  months: 1,  price: 500,  label: 'Mensual' },
+  parejas:      { days: 30,  months: 1,  price: 400,  label: 'Parejas o Más' },
+  anual:        { days: 365, months: 12, price: 5000, label: 'Anual' }
 }
 
 function uid() {
@@ -66,24 +68,31 @@ function getLocalDate() {
 }
 
 function addDays(iso, days) {
-  // iso expected 'YYYY-MM-DD'
   const [y, m, d] = (iso || '').split('-').map(Number)
   const baseUtc = Date.UTC(y, (m || 1) - 1, d || 1)
   const added = new Date(baseUtc + Number(days || 0) * 24 * 60 * 60 * 1000)
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(added)
 }
 
+// BUG FIX v3: suma meses calendario (ene 2 + 1 mes = feb 2, no feb 1)
+function addMonths(iso, months) {
+  const [y, m, d] = (iso || '').split('-').map(Number)
+  let newMonth = (m || 1) + (months || 0)
+  let newYear = y
+  while (newMonth > 12) { newMonth -= 12; newYear++ }
+  while (newMonth < 1)  { newMonth += 12; newYear-- }
+  // overflow: ej. ene 31 + 1 mes = feb 28/29
+  const lastDay = new Date(newYear, newMonth, 0).getDate()
+  const newDay = Math.min(d || 1, lastDay)
+  return `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`
+}
+
 function computeExpiry(joinDateISO, planType) {
   const p = PLANS[planType]
   if (!p) return null
-  if (p.days === 0) return joinDateISO
-  
-  // Special case: Mensual Promo Dic expires on Feb 1, 2026
-  if (planType === 'mensualPromo') {
-    return '2026-02-01'
-  }
-  
-  return addDays(joinDateISO, p.days)
+  if (p.months === 0 && p.days === 0) return joinDateISO   // visita
+  if (p.months > 0) return addMonths(joinDateISO, p.months) // mensual/anual
+  return addDays(joinDateISO, p.days)                        // semana/15dias
 }
 
 function buildFullName(m) {
@@ -189,12 +198,12 @@ app.post('/members', async (req, res) => {
   const basePrice = plan.price
   const totalPrice = basePrice * qty
   
-  // Calcular expiración con cantidad
+  // Calcular expiración con cantidad - BUG FIX v3: meses calendario
   let expiry
-  if (plan.days === 0) {
+  if (plan.months === 0 && plan.days === 0) {
     expiry = joinISO
-  } else if (planType === 'mensualPromo' && qty === 1) {
-    expiry = '2026-02-01'
+  } else if (plan.months > 0) {
+    expiry = addMonths(joinISO, plan.months * qty)
   } else {
     expiry = addDays(joinISO, plan.days * qty)
   }
@@ -266,7 +275,25 @@ app.post('/members/:id/visit', async (req, res) => {
   if (!member) return res.status(404).json({ error: 'No encontrado' })
 
   const timestamp = getLocalTimestamp()
-  const name = buildFullName(member)
+  const today     = getLocalDate()   // YYYY-MM-DD en zona México
+  const name      = buildFullName(member)
+
+  // ── DEDUP: si ya existe una visita HOY para este socio, no crear duplicado ──
+  // Solo dedup para entradas normales (no pagos ni registros de nuevo socio)
+  if (!paymentType && method !== 'new-member') {
+    const alreadyToday = await Visit.findOne({
+      memberId: id,
+      at: { $regex: `^${today}` },
+      method:   { $nin: ['new-member'] },
+    })
+    if (alreadyToday) {
+      // Ya registrado hoy — devolver datos actualizados sin crear duplicado
+      const members = await loadMembers()
+      const updated = members.find(m => m.id === id)
+      return res.json(updated)
+    }
+  }
+
   await Visit.create({ memberId: id, name, at: timestamp, method, paymentType, createdAt: timestamp })
 
   if (paymentType) {
