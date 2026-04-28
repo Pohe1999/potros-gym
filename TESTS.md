@@ -1,6 +1,6 @@
 Pruebas manuales - Flujos críticos
 
-Objetivo: verificar que el sistema separa correctamente "Entradas" (socios) y "Visitas" (pase diario $50).
+Objetivo: verificar que el sistema separa correctamente "Entradas" (socios) y "Visitas" (pase diario $80).
 
 1) Nuevo socio crea entrada automática
 - Acción:
@@ -14,12 +14,12 @@ Objetivo: verificar que el sistema separa correctamente "Entradas" (socios) y "V
 2) Registrar visita para NO-socio (pase diario)
 - Acción:
   - Ir a "Registrar Visita" y escribir un nombre que NO coincida con ningún socio, por ejemplo: "Visitante Demo".
-  - Enviar formulario (debe cobrar $50).
+    - Enviar formulario (debe cobrar $80).
 - Resultado esperado:
-  - Se crea un registro en `quick-visits` con `amount: 50` y `at` con timestamp local.
+    - Se crea un registro en `quick-visits` con `amount: 80` y `at` con timestamp local.
   - Se crea una `Visit` con `memberId: 'visitor'`, método `quick-visit` y `paymentType: 'visita'`.
   - En `Registrar Visita` se debe listar esta visita en los movimientos de hoy.
-  - En `Panel de Ingresos` y exportación, el pago aparece como tipo `visita` y suma +50 a ingresos.
+    - En `Panel de Ingresos` y exportación, el pago aparece como tipo `visita` y suma +80 a ingresos.
 
 3) Intentar registrar visita con nombre que coincide con socio
 - Acción:
@@ -27,7 +27,7 @@ Objetivo: verificar que el sistema separa correctamente "Entradas" (socios) y "V
 - Resultado esperado:
   - Frontend muestra advertencia y NO crea `quick-visit`.
   - Backend rechazará con 400 si se intenta por API directa.
-  - Se debe usar `Registro de Entrada` para marcar la entrada del socio (no cobrarle $50 si es socio y no paga visita).
+  - Se debe usar `Registro de Entrada` para marcar la entrada del socio (no cobrarle $80 si es socio y no paga visita).
 
 4) Registrar entrada de socio (Checkin)
 - Acción:

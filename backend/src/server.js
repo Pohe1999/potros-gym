@@ -21,7 +21,7 @@ mongoose.connect(MONGO_URI).then(() => {
 // BUG FIX v3: planes mensuales/anuales usan meses calendario, no días planos
 // Así "2 de enero + mensual" vence el "2 de febrero" (no el 1)
 const PLANS = {
-  visita:       { days: 0,   months: 0,  price: 50,   label: 'Visita' },
+  visita:       { days: 0,   months: 0,  price: 80,   label: 'Visita' },
   semana:       { days: 7,   months: 0,  price: 150,  label: '1 Semana' },
   '15dias':     { days: 15,  months: 0,  price: 250,  label: '15 Días' },
   mensualPromo: { days: 30,  months: 1,  price: 400,  label: 'Mensual Promo' },
@@ -328,7 +328,7 @@ app.get('/quick-visits', async (req, res) => {
 })
 
 app.post('/quick-visits', async (req, res) => {
-  const { name, amount = 50 } = req.body || {}
+  const { name, amount = 80 } = req.body || {}
   if (!name) return res.status(400).json({ error: 'name requerido' })
   // Prevent creating a quick-visit for a name that exactly matches a registered member
   try {

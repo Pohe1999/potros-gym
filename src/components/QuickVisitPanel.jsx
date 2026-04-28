@@ -24,8 +24,8 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
     }
     try {
       setLoading(true)
-      await membersService.addQuickVisit({ name: name.trim(), amount: 50 })
-      if (onShowToast) onShowToast(`Visita registrada: ${name.trim()} — $50 cobrado`, 'success')
+      await membersService.addQuickVisit({ name: name.trim(), amount: 80 })
+      if (onShowToast) onShowToast(`Visita registrada: ${name.trim()} — $80 cobrado`, 'success')
       setName('')
       onChange()
     } catch (err) {
@@ -49,7 +49,7 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
         </div>
         <div>
           <h2 className="font-extrabold text-white text-lg">Registrar Visita Rápida</h2>
-          <p className="text-xs text-white/60">Pase diario $50 — Solo para visitantes no socios</p>
+          <p className="text-xs text-white/60">Pase diario $80 — Solo para visitantes no socios</p>
         </div>
       </div>
 
@@ -58,7 +58,7 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
         <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/8 border border-amber-500/15">
           <Zap size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
           <div className="text-xs text-white/50 leading-relaxed">
-            Este registro es para personas que no son socios del gym y pagan el <strong className="text-amber-300">pase diario de $50</strong>.
+            Este registro es para personas que no son socios del gym y pagan el <strong className="text-amber-300">pase diario de $80</strong>.
             Si el visitante es socio, usa la pantalla de <strong className="text-white/70">Registro de Entrada</strong>.
           </div>
         </div>
@@ -92,7 +92,7 @@ export default function QuickVisitPanel({ members = [], quickVisits = [], onChan
             </>
           ) : (
             <>
-              <CheckCircle2 size={17} /> Registrar Visita — $50
+              <CheckCircle2 size={17} /> Registrar Visita — $80
             </>
           )}
         </motion.button>

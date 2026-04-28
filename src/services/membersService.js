@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 
 // BUG FIX v3: planes mensuales/anuales usan meses calendario
 export const PLANS = {
-  visita:       { days: 0,   months: 0,  price: 50,   label: 'Visita' },
+  visita:       { days: 0,   months: 0,  price: 80,   label: 'Visita' },
   semana:       { days: 7,   months: 0,  price: 150,  label: '1 Semana' },
   '15dias':     { days: 15,  months: 0,  price: 250,  label: '15 Días' },
   mensualPromo: { days: 30,  months: 1,  price: 400,  label: 'Mensual Promo' },

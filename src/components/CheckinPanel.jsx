@@ -266,7 +266,7 @@ export default function CheckinPanel({
             </div>
             <div className="relative">
               <div className="text-sm font-bold text-white">Visita Rápida</div>
-              <div className="text-[11px] text-white/40">Pase diario $50</div>
+              <div className="text-[11px] text-white/40">Pase diario $80</div>
             </div>
           </motion.button>
         </motion.div>
