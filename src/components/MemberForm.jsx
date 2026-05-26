@@ -7,8 +7,9 @@ const PLAN_OPTIONS = [
   { value: 'semana',    label: '1 Semana',          sublabel: '$150' },
   { value: '15dias',    label: '15 Días',            sublabel: '$250' },
   { value: 'estudiante',label: 'Promo Estudiantes',  sublabel: '$350' },
-  { value: 'mensual',   label: 'Mensual',            sublabel: '$500' },
-  { value: 'parejas',   label: 'Parejas o Más',      sublabel: '$400' },
+  { value: 'mensual',   label: 'Mensual',                sublabel: '$500' },
+  { value: 'hotSale',   label: 'Mensual Hot Sale 🔥',  sublabel: '$425' },
+  { value: 'parejas',   label: 'Parejas o Más',        sublabel: '$400' },
   { value: 'anual',     label: 'Anual',              sublabel: '$5,000' },
 ]
 
