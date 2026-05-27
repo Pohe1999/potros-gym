@@ -77,7 +77,7 @@ export default function RenewModal({ member, onClose, onSave }) {
                 className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.09] focus:border-potros-red/60 focus:outline-none text-white text-sm transition-all"
               >
                 {Object.entries(membersService.PLANS)
-                  .filter(([k]) => k !== 'visita')
+                  .filter(([k]) => k !== 'visita' && k !== 'mensualPromo')
                   .map(([k, p]) => <option key={k} value={k}>{p.label} — ${p.price}</option>)
                 }
               </select>

@@ -18,7 +18,7 @@ export default function MemberStatusModal({ member, onClose, onChange = () => {}
   const expiringSoon = d !== null && !expired && d <= 5
   const fullName = `${member.firstName || member.name || ''} ${member.paterno || ''} ${member.materno || ''}`.trim()
 
-  const [renewPlan, setRenewPlan] = useState(member.planType === 'visita' ? 'mensual' : member.planType || 'mensual')
+  const [renewPlan, setRenewPlan] = useState('mensual')
   const [saving, setSaving]       = useState(false)
   const [entrySaving, setEntrySaving] = useState(false)
   const actionLocked = saving || entrySaving || isBusy
@@ -179,7 +179,7 @@ export default function MemberStatusModal({ member, onClose, onChange = () => {}
                 className="w-full p-2.5 rounded-lg bg-white/[0.05] border border-white/[0.09] focus:border-potros-red/60 focus:outline-none text-white text-sm mb-3 transition-all"
               >
                 {Object.entries(PLANS)
-                  .filter(([key]) => key !== 'visita')
+                  .filter(([key]) => key !== 'visita' && key !== 'mensualPromo')
                   .map(([key, plan]) => (
                     <option key={key} value={key}>{plan.label} — ${plan.price}</option>
                   ))
