@@ -27,6 +27,7 @@ const PLANS = {
   mensualPromo: { days: 30,  months: 1,  price: 400,  label: 'Mensual Promo' },
   estudiante:   { days: 30,  months: 1,  price: 350,  label: 'Promo Estudiantes' },
   mensual:      { days: 30,  months: 1,  price: 500,  label: 'Mensual' },
+  hotSale:      { days: 30,  months: 1,  price: 425,  label: 'Mensual Hot Sale 🔥' },
   parejas:      { days: 30,  months: 1,  price: 400,  label: 'Parejas o Más' },
   anual:        { days: 365, months: 12, price: 5000, label: 'Anual' }
 }

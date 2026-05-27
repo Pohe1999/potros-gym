@@ -4,12 +4,20 @@ import { RefreshCw, X, Calendar, CheckCircle2 } from 'lucide-react'
 import membersService from '../services/membersService'
 
 export default function RenewModal({ member, onClose, onSave }) {
-  const [planType, setPlanType]         = useState('mensual')
+  const [planType, setPlanType]           = useState('mensual')
   const [recordPayment, setRecordPayment] = useState(true)
-  const [saving, setSaving]             = useState(false)
+  const [saving, setSaving]               = useState(false)
+
+  const today   = membersService.getTodayLocal()
+  const expired = !member.expiry || member.expiry < today
+
+  // Si el socio sigue activo, encadenar desde el día siguiente al vencimiento
+  const startDate = (!expired && member.expiry)
+    ? membersService.addDays(member.expiry, 1)
+    : today
 
   const planInfo  = membersService.PLANS[planType] || { price: 0, label: 'Mensual' }
-  const newExpiry = membersService.computeExpiry(membersService.getTodayLocal(), planType)
+  const newExpiry = membersService.computeExpiry(startDate, planType)
 
   const handleRenew = async () => {
     if (saving) return
@@ -17,8 +25,7 @@ export default function RenewModal({ member, onClose, onSave }) {
       setSaving(true)
       await membersService.updateMember(member.id, {
         planType,
-        price: planInfo.price,
-        joinDate: membersService.getTodayLocal()
+        joinDate: startDate
       })
       if (recordPayment) {
         await membersService.registerPayment(member.id, { type: planType })
@@ -78,9 +85,18 @@ export default function RenewModal({ member, onClose, onSave }) {
 
             <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-500/8 border border-emerald-500/15">
               <Calendar size={14} className="text-emerald-400 flex-shrink-0" />
-              <div>
-                <div className="text-[11px] text-emerald-400/60 font-medium">Nuevo vencimiento</div>
-                <div className="text-sm font-bold text-emerald-300">{membersService.formatSpanishDate(newExpiry)}</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] text-emerald-400/60 font-medium">
+                  {!expired && member.expiry ? 'Encadenado desde el día siguiente al vencimiento' : 'Inicia hoy'}
+                </div>
+                <div className="text-sm font-bold text-emerald-300">
+                  Vence: {membersService.formatSpanishDate(newExpiry)}
+                </div>
+                {!expired && member.expiry && (
+                  <div className="text-[10px] text-white/40 mt-0.5">
+                    Inicia: {membersService.formatSpanishDate(startDate)}
+                  </div>
+                )}
               </div>
             </div>
 
